@@ -9,6 +9,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\ClassNameType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
@@ -38,26 +39,28 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 	{
 		$objectType = $scope->getType($node->args[0]->value);
 		$stringType = new StringType();
-		if (
-			!$objectType instanceof MixedType
-			&& !$objectType instanceof UnionType
-			&& !$stringType->isSuperTypeOf($objectType)->no()
-		) {
-			return new SpecifiedTypes();
-		}
-
 		$classType = $scope->getType($node->args[1]->value);
+
 		if ($classType instanceof ConstantStringType && $classType->getValue() !== '') {
-			$type = new ObjectType($classType->getValue());
+			$type = TypeCombinator::union(
+				new ObjectType($classType->getValue()),
+				new ClassNameType($classType->getValue())
+			);
 		} elseif ($objectType instanceof UnionType) {
 			$type = TypeCombinator::union(...array_filter(
 				$objectType->getTypes(),
 				static function (Type $type) {
-					return $type instanceof ObjectWithoutClassType || $type instanceof TypeWithClassName;
+					return $type instanceof ObjectWithoutClassType
+						|| $type instanceof TypeWithClassName
+						|| $type instanceof StringType
+						|| $type instanceof ClassNameType;
 				}
 			));
 		} else {
-			$type = new ObjectWithoutClassType();
+			$type = TypeCombinator::union(
+				new ObjectWithoutClassType(),
+				new StringType()
+			);
 		}
 
 		$types = $this->typeSpecifier->create($node->args[0]->value, $type, $context);
@@ -66,11 +69,20 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 			&& (!isset($node->args[2])
 				|| $scope->getType($node->args[2]->value)->equals(new ConstantBooleanType(true)))
 		) {
+			if ($objectType instanceof ConstantStringType) {
+				$type = $objectType;
+			} elseif ($classType instanceof ConstantStringType) {
+				$type = new ClassNameType($classType->getValue());
+			} else {
+				$type = $stringType;
+			}
+
 			$stringTypes = $this->typeSpecifier->create(
 				$node->args[0]->value,
-				$objectType instanceof ConstantStringType ? $objectType : $stringType,
+				$type,
 				$context
 			);
+
 			$types = $types->intersectWith($stringTypes);
 		}
 

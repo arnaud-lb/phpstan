@@ -11,6 +11,7 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\TypeUtils;
 
 class InstantiationRule implements \PHPStan\Rules\Rule
 {
@@ -57,7 +58,12 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 
 			$class = $anonymousClassType->getClassName();
 		} else {
-			return [];
+			$strings = TypeUtils::getConstantStrings($scope->getType($node->class));
+			if (count($strings) !== 0) {
+				$class = reset($strings)->getValue();
+			} else {
+				return [];
+			}
 		}
 
 		$lowercasedClass = strtolower($class);

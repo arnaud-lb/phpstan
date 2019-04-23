@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Type\Accessory\HasPropertyType;
+use PHPStan\Type\ClassNameType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 
@@ -47,6 +48,15 @@ class TypeUtils
 
 	/**
 	 * @param \PHPStan\Type\Type $type
+	 * @return \PHPStan\Type\ClassNameType[]
+	 */
+	public static function getClassNameStrings(Type $type): array
+	{
+		return self::map(ClassNameType::class, $type, true, false);
+	}
+
+	/**
+	 * @param \PHPStan\Type\Type $type
 	 * @return \PHPStan\Type\ConstantType[]
 	 */
 	public static function getAnyConstantTypes(Type $type): array
@@ -86,14 +96,20 @@ class TypeUtils
 			return [$type->getClassName()];
 		}
 
+		if ($type instanceof ConstantStringType) {
+			return [$type->getValue()];
+		}
+
+		if ($type instanceof ClassNameType) {
+			return [$type->getClassName()];
+		}
+
 		if ($type instanceof UnionType || $type instanceof IntersectionType) {
 			$classNames = [];
 			foreach ($type->getTypes() as $innerType) {
-				if (!$innerType instanceof TypeWithClassName) {
-					continue;
+				foreach (self::getDirectClassNames($innerType) as $className) {
+					$classNames[] = $className;
 				}
-
-				$classNames[] = $innerType->getClassName();
 			}
 
 			return $classNames;

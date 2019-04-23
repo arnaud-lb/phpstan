@@ -1012,29 +1012,12 @@ class Scope implements ClassMemberAccessAnswerer
 				$className = $node->class->toString();
 				$lowercasedClassName = strtolower($className);
 				$resolvedClassName = $this->resolveName($node->class);
-				if ($this->broker->hasClass($resolvedClassName)) {
-					$classReflection = $this->broker->getClass($resolvedClassName);
-					if ($classReflection->hasConstructor()) {
-						$constructorMethod = $classReflection->getConstructor();
-						$resolvedTypes = [];
-						$methodCall = new Expr\StaticCall(
-							$node->class,
-							new Node\Identifier($constructorMethod->getName()),
-							$node->args
-						);
-						foreach ($this->broker->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
-							if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
-								continue;
-							}
 
-							$resolvedTypes[] = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall($constructorMethod, $methodCall, $this);
-						}
-
-						if (count($resolvedTypes) > 0) {
-							return TypeCombinator::union(...$resolvedTypes);
-						}
-					}
+				$overloadedType = $this->resolveOverloadedInstantiationType($resolvedClassName);
+				if ($overloadedType !== null) {
+					return $overfloadedType;
 				}
+
 				if (in_array($lowercasedClassName, [
 					'static',
 					'parent',
@@ -1059,6 +1042,19 @@ class Scope implements ClassMemberAccessAnswerer
 				$anonymousClassReflection = $this->broker->getAnonymousClassReflection($node->class, $this);
 
 				return new ObjectType($anonymousClassReflection->getName());
+			}
+			$strings = TypeUtils::getConstantStrings($this->getType($node->class));
+			if (count($strings) !== 0) {
+				$className = reset($strings)->getValue();
+				$overloadedType = $this->resolveOverloadedInstantiationType($className);
+				if ($overloadedType !== null) {
+					return $overfloadedType;
+				}
+				return new ObjectType($className);
+			}
+			$strings = TypeUtils::getClassNameStrings($this->getType($node->class));
+			if (count($strings) !== 0) {
+				return new ObjectType(reset($strings)->getClassName());
 			}
 		} elseif ($node instanceof Array_) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
@@ -1574,6 +1570,39 @@ class Scope implements ClassMemberAccessAnswerer
 		}
 
 		return new MixedType();
+	}
+
+	private function resolveOverloadedInstantiationType(string $className): ?Type
+	{
+		if (!$this->broker->hasClass($className)) {
+			return null;
+		}
+
+		$classReflection = $this->broker->getClass($className);
+		if (!$classReflection->hasConstructor()) {
+			return null;
+		}
+
+		$constructorMethod = $classReflection->getConstructor();
+		$resolvedTypes = [];
+		$methodCall = new Expr\StaticCall(
+			$node->class,
+			new Node\Identifier($constructorMethod->getName()),
+			$node->args
+		);
+		foreach ($this->broker->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
+			if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
+				continue;
+			}
+
+			$resolvedTypes[] = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall($constructorMethod, $methodCall, $this);
+		}
+
+		if (count($resolvedTypes) > 0) {
+			return TypeCombinator::union(...$resolvedTypes);
+		}
+
+		return null;
 	}
 
 	protected function getTypeFromArrayDimFetch(
