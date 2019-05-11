@@ -4,6 +4,7 @@
 use Composer\XdebugHandler\XdebugHandler;
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\DumpDependenciesCommand;
+use PHPStan\Command\ReplaceCommand;
 
 gc_disable(); // performance boost
 
@@ -37,5 +38,6 @@ $application = new \Symfony\Component\Console\Application(
 	$version
 );
 $application->add(new AnalyseCommand());
+$application->add(new ReplaceCommand());
 $application->add(new DumpDependenciesCommand());
 $application->run();
