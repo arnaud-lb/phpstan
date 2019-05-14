@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use Nette\Utils\Json;
 use PhpOption\Option;
 use PhpOption\Some;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\Rules\LineRuleError;
@@ -148,8 +149,10 @@ class Replacer
 						$this->scopeFactory->create(ScopeContext::create($file)),
 						function (\PhpParser\Node $node, Scope $scope) use (&$fileErrors, $file, &$scopeBenchmarkTime): void {
 							$matcher = require 'match.php';
-							$matcher->matches($node, $scope)->map(function($match) {
-								var_dump($match->getNode('id')->jsonSerialize());
+							$matcher->matches($node, $scope)->map(function ($match) use (&$fileErrors, $file) {
+								$pp = new Standard();
+								$str = $pp->prettyPrint([$match->getNode('id')]);
+								$fileErrors[] = new Error($str, $file, $match->getNode('id')->getLine(), false);
 							});
 						}
 					);
