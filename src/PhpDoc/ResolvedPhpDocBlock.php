@@ -17,6 +17,9 @@ class ResolvedPhpDocBlock
 	/** @var array<string, \PHPStan\PhpDoc\Tag\PropertyTag> */
 	private $propertyTags;
 
+	/** @var array<string, \PHPStan\PhpDoc\Tag\TemplateTag> */
+	private $templateTags;
+
 	/** @var array<string, \PHPStan\PhpDoc\Tag\ParamTag> */
 	private $paramTags;
 
@@ -39,6 +42,7 @@ class ResolvedPhpDocBlock
 	 * @param array<string|int, \PHPStan\PhpDoc\Tag\VarTag> $varTags
 	 * @param array<string, \PHPStan\PhpDoc\Tag\MethodTag> $methodTags
 	 * @param array<string, \PHPStan\PhpDoc\Tag\PropertyTag> $propertyTags
+	 * @param array<string, \PHPStan\PhpDoc\Tag\TemplateTag> $templateTags
 	 * @param array<string, \PHPStan\PhpDoc\Tag\ParamTag> $paramTags
 	 * @param \PHPStan\PhpDoc\Tag\ReturnTag|null $returnTag
 	 * @param \PHPStan\PhpDoc\Tag\ThrowsTag|null $throwsTags
@@ -50,6 +54,7 @@ class ResolvedPhpDocBlock
 		array $varTags,
 		array $methodTags,
 		array $propertyTags,
+		array $templateTags,
 		array $paramTags,
 		?ReturnTag $returnTag,
 		?ThrowsTag $throwsTags,
@@ -61,6 +66,7 @@ class ResolvedPhpDocBlock
 		$this->varTags = $varTags;
 		$this->methodTags = $methodTags;
 		$this->propertyTags = $propertyTags;
+		$this->templateTags = $templateTags;
 		$this->paramTags = $paramTags;
 		$this->returnTag = $returnTag;
 		$this->throwsTag = $throwsTags;
@@ -73,6 +79,7 @@ class ResolvedPhpDocBlock
 	 * @param array<string|int, \PHPStan\PhpDoc\Tag\VarTag> $varTags
 	 * @param array<string, \PHPStan\PhpDoc\Tag\MethodTag> $methodTags
 	 * @param array<string, \PHPStan\PhpDoc\Tag\PropertyTag> $propertyTags
+	 * @param array<string, \PHPStan\PhpDoc\Tag\TemplateTag> $templateTags
 	 * @param array<string, \PHPStan\PhpDoc\Tag\ParamTag> $paramTags
 	 * @param \PHPStan\PhpDoc\Tag\ReturnTag|null $returnTag
 	 * @param \PHPStan\PhpDoc\Tag\ThrowsTag|null $throwsTag
@@ -85,6 +92,7 @@ class ResolvedPhpDocBlock
 		array $varTags,
 		array $methodTags,
 		array $propertyTags,
+		array $templateTags,
 		array $paramTags,
 		?ReturnTag $returnTag,
 		?ThrowsTag $throwsTag,
@@ -97,6 +105,7 @@ class ResolvedPhpDocBlock
 			$varTags,
 			$methodTags,
 			$propertyTags,
+			$templateTags,
 			$paramTags,
 			$returnTag,
 			$throwsTag,
@@ -108,7 +117,7 @@ class ResolvedPhpDocBlock
 
 	public static function createEmpty(): self
 	{
-		return new self([], [], [], [], null, null, false, false, false);
+		return new self([], [], [], [], [], null, null, false, false, false);
 	}
 
 	/**
@@ -133,6 +142,14 @@ class ResolvedPhpDocBlock
 	public function getPropertyTags(): array
 	{
 		return $this->propertyTags;
+	}
+
+	/**
+	 * @return array<string, \PHPStan\PhpDoc\Tag\TemplateTag>
+	 */
+	public function getTemplateTags(): array
+	{
+		return $this->templateTags;
 	}
 
 	/**
@@ -178,6 +195,7 @@ class ResolvedPhpDocBlock
 			$properties['varTags'],
 			$properties['methodTags'],
 			$properties['propertyTags'],
+			$properties['templateTags'],
 			$properties['paramTags'],
 			$properties['returnTag'],
 			$properties['throwsTag'],

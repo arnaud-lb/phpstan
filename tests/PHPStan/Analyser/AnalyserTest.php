@@ -143,6 +143,12 @@ class AnalyserTest extends \PHPStan\Testing\TestCase
 		$this->assertSame(10, $errorTwo->getLine());
 	}
 
+	public function testCompilerHaltOffset(): void
+	{
+		$result = $this->runAnalyser([], true, __DIR__ . '/data/compiler-halt-offset.php', true);
+		$this->assertEmpty($result);
+	}
+
 	/**
 	 * @param string[]|array<array<string, string>> $ignoreErrors
 	 * @param bool $reportUnmatchedIgnoredErrors

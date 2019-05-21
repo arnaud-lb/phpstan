@@ -26,6 +26,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
+use PHPStan\Reflection\GenericParametersAcceptorResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -1210,6 +1211,9 @@ class Scope implements ClassMemberAccessAnswerer
 						new ConstantStringType("\r\n"),
 					]);
 				}
+				if ($resolvedConstantName === '__COMPILER_HALT_OFFSET__') {
+					return new IntegerType();
+				}
 
 				$constantType = $this->getTypeFromValue(constant($resolvedConstantName));
 				if ($constantType instanceof ConstantType && in_array($resolvedConstantName, $this->dynamicConstantNames, true)) {
@@ -1546,10 +1550,16 @@ class Scope implements ClassMemberAccessAnswerer
 					return new ErrorType();
 				}
 
-				return ParametersAcceptorSelector::selectFromArgs(
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 					$this,
 					$node->args,
 					$calledOnType->getCallableParametersAcceptors($this)
+				);
+
+				return GenericParametersAcceptorResolver::resolve(
+					$this,
+					$node->args,
+					$parametersAcceptor
 				)->getReturnType();
 			}
 
@@ -1566,10 +1576,16 @@ class Scope implements ClassMemberAccessAnswerer
 				return $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall($functionReflection, $node, $this);
 			}
 
-			return ParametersAcceptorSelector::selectFromArgs(
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 				$this,
 				$node->args,
 				$functionReflection->getVariants()
+			);
+
+			return GenericParametersAcceptorResolver::resolve(
+				$this,
+				$node->args,
+				$parametersAcceptor
 			)->getReturnType();
 		}
 

@@ -6,6 +6,7 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\TemplateTypeMap;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
@@ -190,6 +191,49 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
+	}
+
+	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
+	{
+		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
+			return $receivedType->inferTemplateTypesOn($this);
+		}
+
+		$types = TemplateTypeMap::empty();
+
+		if ($receivedType instanceof ParametersAcceptor && $this->accepts($receivedType, true)->yes()) {
+			$args = $receivedType->getParameters();
+			$returnType = $receivedType->getReturnType();
+		} else {
+			$args = [];
+			$returnType = new NeverType();
+		}
+
+		$n = 0;
+		foreach ($this->getParameters() as $param) {
+			$arg = isset($args[$n]) ? $args[$n]->getType() : new NeverType();
+			$types = $types->union($param->getType()->inferTemplateTypes($arg));
+			$n++;
+		}
+
+		return $types->union($this->getReturnType()->inferTemplateTypes($returnType));
+	}
+
+	public function resolveTemplateTypes(TemplateTypeMap $types): Type
+	{
+		return new self(
+			array_map(static function (NativeParameterReflection $param) use ($types): NativeParameterReflection {
+				return new NativeParameterReflection(
+					$param->getName(),
+					$param->isOptional(),
+					$param->getType()->resolveTemplateTypes($types),
+					$param->passedByReference(),
+					$param->isVariadic()
+				);
+			}, $this->getParameters()),
+			$this->getReturnType()->resolveTemplateTypes($types),
+			$this->isVariadic()
+		);
 	}
 
 	/**

@@ -8,13 +8,17 @@ use PHPStan\PhpDoc\Tag\MethodTagParameter;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
+use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ThrowsTagValueNode;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Reflection\TemplateTypeMap;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -33,10 +37,19 @@ class PhpDocNodeResolver
 
 	public function resolve(PhpDocNode $phpDocNode, NameScope $nameScope): ResolvedPhpDocBlock
 	{
+		$templateTags = $this->resolveTemplateTags($phpDocNode, $nameScope);
+
+		$nameScope = $nameScope->withTemplateTypeMap(
+			new TemplateTypeMap(array_map(static function (TemplateTag $tag): TemplateType {
+				return TemplateTypeFactory::fromTemplateTag($tag);
+			}, $templateTags))
+		);
+
 		return ResolvedPhpDocBlock::create(
 			$this->resolveVarTags($phpDocNode, $nameScope),
 			$this->resolveMethodTags($phpDocNode, $nameScope),
 			$this->resolvePropertyTags($phpDocNode, $nameScope),
+			$templateTags,
 			$this->resolveParamTags($phpDocNode, $nameScope),
 			$this->resolveReturnTag($phpDocNode, $nameScope),
 			$this->resolveThrowsTags($phpDocNode, $nameScope),
@@ -152,6 +165,25 @@ class PhpDocNodeResolver
 				$tagValue->returnType !== null ? $this->typeNodeResolver->resolve($tagValue->returnType, $nameScope) : new MixedType(),
 				$tagValue->isStatic,
 				$parameters
+			);
+		}
+
+		return $resolved;
+	}
+
+	/**
+	 * @param PhpDocNode $phpDocNode
+	 * @param NameScope $nameScope
+	 * @return array<string, \PHPStan\PhpDoc\Tag\TemplateTag>
+	 */
+	private function resolveTemplateTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$resolved = [];
+
+		foreach ($phpDocNode->getTemplateTagValues() as $tagValue) {
+			$resolved[$tagValue->name] = new TemplateTag(
+				$tagValue->name,
+				$this->typeNodeResolver->resolve($tagValue->bound, $nameScope)
 			);
 		}
 

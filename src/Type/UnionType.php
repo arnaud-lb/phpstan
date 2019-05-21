@@ -6,6 +6,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\TemplateTypeMap;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -529,6 +530,36 @@ class UnionType implements CompoundType, StaticResolvableType
 		});
 
 		return $type;
+	}
+
+	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
+	{
+		$types = TemplateTypeMap::empty();
+
+		foreach ($this->types as $type) {
+			$receive = $type->accepts($receivedType, true)->yes() ? $receivedType : new NeverType();
+			$types = $types->union($type->inferTemplateTypes($receive));
+		}
+
+		return $types;
+	}
+
+	public function inferTemplateTypesOn(Type $templateType): TemplateTypeMap
+	{
+		$types = TemplateTypeMap::empty();
+
+		foreach ($this->types as $type) {
+			$types = $types->union($templateType->inferTemplateTypes($type));
+		}
+
+		return $types;
+	}
+
+	public function resolveTemplateTypes(TemplateTypeMap $types): Type
+	{
+		return self::unionTypes(static function (Type $type) use ($types): Type {
+			return $type->resolveTemplateTypes($types);
+		});
 	}
 
 	/**

@@ -2,6 +2,9 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Reflection\TemplateTypeMap;
+use PHPStan\Type\Type;
+
 class NameScope
 {
 
@@ -14,16 +17,20 @@ class NameScope
 	/** @var string|null */
 	private $className;
 
+	/** @var TemplateTypeMap */
+	private $templateTypeMap;
+
 	/**
 	 * @param string|null $namespace
 	 * @param string[] $uses alias(string) => fullName(string)
 	 * @param string|null $className
 	 */
-	public function __construct(?string $namespace, array $uses, ?string $className = null)
+	public function __construct(?string $namespace, array $uses, ?string $className = null, ?TemplateTypeMap $templateTypeMap = null)
 	{
 		$this->namespace = $namespace;
 		$this->uses = $uses;
 		$this->className = $className;
+		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::empty();
 	}
 
 	public function getClassName(): ?string
@@ -52,6 +59,21 @@ class NameScope
 		}
 
 		return $name;
+	}
+
+	public function resolveTemplateTypeName(string $name): ?Type
+	{
+		return $this->templateTypeMap->getType($name);
+	}
+
+	public function withTemplateTypeMap(TemplateTypeMap $map): self
+	{
+		return new self(
+			$this->namespace,
+			$this->uses,
+			$this->className,
+			$map
+		);
 	}
 
 }

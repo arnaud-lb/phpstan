@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\TemplateTypeMap;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -286,6 +287,38 @@ class ArrayType implements StaticResolvableType
 		}
 
 		return new UnionType([new IntegerType(), new StringType()]);
+	}
+
+	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
+	{
+		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
+			return $receivedType->inferTemplateTypesOn($this);
+		}
+
+		if (
+			$receivedType instanceof ArrayType
+			&& $this->getKeyType()->accepts($receivedType->getKeyType(), true)->yes()
+			&& $this->getItemType()->accepts($receivedType->getItemType(), true)->yes()
+		) {
+			$receivedKey = $receivedType->getKeyType();
+			$receivedItem = $receivedType->getItemType();
+		} else {
+			$receivedKey = new NeverType();
+			$receivedItem = new NeverType();
+		}
+
+		$resolvedKey = $this->getKeyType()->inferTemplateTypes($receivedKey);
+		$resolvedItem = $this->getItemType()->inferTemplateTypes($receivedItem);
+
+		return $resolvedKey->union($resolvedItem);
+	}
+
+	public function resolveTemplateTypes(TemplateTypeMap $types): Type
+	{
+		return new self(
+			$this->getKeyType()->resolveTemplateTypes($types),
+			$this->getItemType()->resolveTemplateTypes($types)
+		);
 	}
 
 	/**

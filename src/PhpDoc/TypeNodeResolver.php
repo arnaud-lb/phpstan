@@ -67,7 +67,7 @@ class TypeNodeResolver
 
 	public function getCacheKey(): string
 	{
-		$key = 'v54';
+		$key = 'v55';
 		foreach ($this->extensions as $extension) {
 			$key .= sprintf('-%s', $extension->getCacheKey());
 		}
@@ -197,6 +197,11 @@ class TypeNodeResolver
 
 					return new NonexistentParentClassType();
 			}
+		}
+
+		$templateType = $nameScope->resolveTemplateTypeName($typeNode->name);
+		if ($templateType !== null) {
+			return $templateType;
 		}
 
 		return new ObjectType($nameScope->resolveStringName($typeNode->name));

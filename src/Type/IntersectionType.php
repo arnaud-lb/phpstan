@@ -6,6 +6,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\TemplateTypeMap;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryType;
@@ -351,6 +352,36 @@ class IntersectionType implements CompoundType, StaticResolvableType
 	public function changeBaseClass(string $className): StaticResolvableType
 	{
 		return new self(UnionTypeHelper::changeBaseClass($className, $this->getTypes()));
+	}
+
+	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
+	{
+		$types = TemplateTypeMap::empty();
+
+		foreach ($this->types as $type) {
+			$receive = $type->accepts($receivedType, true)->yes() ? $receivedType : new NeverType();
+			$types = $types->intersect($type->inferTemplateTypes($receive));
+		}
+
+		return $types;
+	}
+
+	public function inferTemplateTypesOn(Type $templateType): TemplateTypeMap
+	{
+		$types = TemplateTypeMap::empty();
+
+		foreach ($this->types as $type) {
+			$types = $types->intersect($templateType->inferTemplateTypes($type));
+		}
+
+		return $types;
+	}
+
+	public function resolveTemplateTypes(TemplateTypeMap $types): Type
+	{
+		return self::intersectTypes(static function (Type $type) use ($types): Type {
+			return $type->resolveTemplateTypes($types);
+		});
 	}
 
 	/**
