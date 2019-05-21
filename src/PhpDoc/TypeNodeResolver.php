@@ -199,6 +199,11 @@ class TypeNodeResolver
 			}
 		}
 
+		$templateType = $nameScope->resolveTemplateTypeName($typeNode->name);
+		if ($templateType !== null) {
+			return $templateType;
+		}
+
 		return new ObjectType($nameScope->resolveStringName($typeNode->name));
 	}
 

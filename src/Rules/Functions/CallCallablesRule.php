@@ -123,6 +123,7 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 					'Parameter #%d %s of ' . $callableDescription . ' expects %s, %s given.',
 					'Result of ' . $callableDescription . ' (void) is used.',
 					'Parameter #%d %s of ' . $callableDescription . ' is passed by reference, so it expects variables only.',
+					'Unable to resolve the type of parameter %s in call to ' . ucfirst($callableDescription),
 				]
 			)
 		);

@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
@@ -12,6 +13,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 
 class ClosureType implements TypeWithClassName, ParametersAcceptor
@@ -256,6 +258,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		);
 	}
 
+	public function getTemplateTypeMap(): TemplateTypeMap
+	{
+		return TemplateTypeMap::empty();
+	}
+
 	/**
 	 * @return array<int, \PHPStan\Reflection\Native\NativeParameterReflection>
 	 */
@@ -272,6 +279,23 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
+	}
+
+	public function map(callable $cb): Type
+	{
+		return $cb(new static(
+			array_map(static function (NativeParameterReflection $param) use ($cb): NativeParameterReflection {
+				return new NativeParameterReflection(
+					$param->getName(),
+					$param->isOptional(),
+					$param->getType()->map($cb),
+					$param->passedByReference(),
+					$param->isVariadic()
+				);
+			}, $this->getParameters()),
+			$this->getReturnType()->map($cb),
+			$this->isVariadic()
+		));
 	}
 
 	/**

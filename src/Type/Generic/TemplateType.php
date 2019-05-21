@@ -9,4 +9,10 @@ interface TemplateType extends Type
 
 	public function getName(): string;
 
+	public function getScope(): TemplateTypeScope;
+
+	public function toArgument(): TemplateType;
+
+	public function isArgument(): bool;
+
 }

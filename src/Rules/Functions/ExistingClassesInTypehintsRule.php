@@ -40,6 +40,10 @@ class ExistingClassesInTypehintsRule implements \PHPStan\Rules\Rule
 			sprintf(
 				'Return typehint of function %s() has invalid type %%s.',
 				(string) $node->namespacedName
+			),
+			sprintf(
+				'Type parameter %%s of function %s() has invalid bound %%s (only single class name bounds are supported currently).',
+				(string) $node->namespacedName
 			)
 		);
 	}

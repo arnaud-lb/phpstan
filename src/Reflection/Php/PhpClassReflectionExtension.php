@@ -19,6 +19,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
@@ -297,6 +298,7 @@ class PhpClassReflectionExtension
 			while ($this->signatureMapProvider->hasFunctionSignature($variantName)) {
 				$methodSignature = $this->signatureMapProvider->getFunctionSignature($variantName, $declaringClassName);
 				$variants[] = new FunctionVariant(
+					TemplateTypeMap::empty(),
 					array_map(static function (ParameterSignature $parameterSignature): NativeParameterReflection {
 						return new NativeParameterReflection(
 							$parameterSignature->getName(),

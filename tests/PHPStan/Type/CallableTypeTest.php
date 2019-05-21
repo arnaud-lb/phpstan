@@ -7,6 +7,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Generic\TemplateMixedType;
+use PHPStan\Type\Generic\TemplateTypeScope;
 
 class CallableTypeTest extends \PHPStan\Testing\TestCase
 {
@@ -163,6 +164,13 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 			);
 		};
 
+		$typeParam = static function (string $name): TemplateMixedType {
+			return new TemplateMixedType(
+				new TemplateTypeScope(null, null),
+				$name
+			);
+		};
+
 		return [
 			'template param' => [
 				new CallableType(
@@ -173,7 +181,7 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 				),
 				new CallableType(
 					[
-						$param(new TemplateMixedType('T')),
+						$param($typeParam('T')),
 					],
 					new IntegerType()
 				),
@@ -190,7 +198,7 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 					[
 						$param(new StringType()),
 					],
-					new TemplateMixedType('T')
+					$typeParam('T')
 				),
 				['T' => 'int'],
 			],
@@ -205,9 +213,9 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 				new CallableType(
 					[
 						$param(new StringType()),
-						$param(new TemplateMixedType('A')),
+						$param($typeParam('A')),
 					],
-					new TemplateMixedType('B')
+					$typeParam('B')
 				),
 				['A' => 'DateTime', 'B' => 'int'],
 			],
@@ -225,9 +233,9 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 				new CallableType(
 					[
 						$param(new StringType()),
-						$param(new TemplateMixedType('A')),
+						$param($typeParam('A')),
 					],
-					new TemplateMixedType('B')
+					$typeParam('B')
 				),
 				['A' => 'DateTime', 'B' => 'mixed'],
 			],
@@ -236,9 +244,9 @@ class CallableTypeTest extends \PHPStan\Testing\TestCase
 				new CallableType(
 					[
 						$param(new StringType()),
-						$param(new TemplateMixedType('A')),
+						$param($typeParam('A')),
 					],
-					new TemplateMixedType('B')
+					$typeParam('B')
 				),
 				['A' => '*NEVER*', 'B' => 'mixed'],
 			],

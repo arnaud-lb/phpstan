@@ -29,9 +29,7 @@ class DummyParameter implements ParameterReflection
 		$this->name = $name;
 		$this->type = $type;
 		$this->optional = $optional;
-		$this->passedByReference = $passedByReference !== null
-			? PassedByReference::createCreatesNewVariable()
-			: PassedByReference::createNo();
+		$this->passedByReference = $passedByReference ?? PassedByReference::createNo();
 		$this->variadic = $variadic;
 	}
 

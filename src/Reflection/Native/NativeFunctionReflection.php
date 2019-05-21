@@ -38,6 +38,14 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 	}
 
 	/**
+	 * @return \PHPStan\Reflection\TypeParameterReflection[]
+	 */
+	public function getTypeParameters(): array
+	{
+		return [];
+	}
+
+	/**
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]
 	 */
 	public function getVariants(): array

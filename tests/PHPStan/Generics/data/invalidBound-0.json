@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Type parameter T of function PHPStan\\Generics\\InvalidBound\\functionA() has invalid bound float|int (only single class name bounds are supported currently).",
+        "line": 9,
+        "ignorable": true
+    }
+]

@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Unable to resolve the type of parameter T in call to function PHPStan\\Generics\\FailToInfer\\functionA",
+        "line": 15,
+        "ignorable": true
+    }
+]

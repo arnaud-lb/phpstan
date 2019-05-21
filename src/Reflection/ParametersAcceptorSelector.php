@@ -4,7 +4,10 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\GenericHelper;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 
@@ -27,6 +30,37 @@ class ParametersAcceptorSelector
 	}
 
 	/**
+	 * Returns argument types (types as seen in the function body)
+	 *
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 */
+	public static function selectArguments(
+		array $parametersAcceptors
+	): ParametersAcceptor
+	{
+		if (count($parametersAcceptors) !== 1) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		$parametersAcceptor = $parametersAcceptors[0];
+
+		return new FunctionVariant(
+			TemplateTypeMap::empty(),
+			array_map(static function (ParameterReflection $param): ParameterReflection {
+				return new DummyParameter(
+					$param->getName(),
+					GenericHelper::toArgument($param->getType()),
+					$param->isOptional(),
+					$param->passedByReference(),
+					$param->isVariadic()
+				);
+			}, $parametersAcceptor->getParameters()),
+			$parametersAcceptor->isVariadic(),
+			GenericHelper::toArgument($parametersAcceptor->getReturnType())
+		);
+	}
+
+	/**
 	 * @param Scope $scope
 	 * @param \PhpParser\Node\Arg[] $args
 	 * @param ParametersAcceptor[] $parametersAcceptors
@@ -38,10 +72,6 @@ class ParametersAcceptorSelector
 		array $parametersAcceptors
 	): ParametersAcceptor
 	{
-		if (count($parametersAcceptors) === 1) {
-			return $parametersAcceptors[0];
-		}
-
 		$types = [];
 		$unpack = false;
 		foreach ($args as $arg) {
@@ -70,7 +100,7 @@ class ParametersAcceptorSelector
 	): ParametersAcceptor
 	{
 		if (count($parametersAcceptors) === 1) {
-			return $parametersAcceptors[0];
+			return self::resolveTemplateTypes($types, $parametersAcceptors[0]);
 		}
 
 		if (count($parametersAcceptors) === 0) {
@@ -113,17 +143,18 @@ class ParametersAcceptorSelector
 		}
 
 		if (count($acceptableAcceptors) === 0) {
-			return self::combineAcceptors($parametersAcceptors);
+			return self::resolveTemplateTypes($types, self::combineAcceptors($parametersAcceptors));
 		}
 
 		if (count($acceptableAcceptors) === 1) {
-			return $acceptableAcceptors[0];
+			return self::resolveTemplateTypes($types, $acceptableAcceptors[0]);
 		}
 
 		$winningAcceptors = [];
 		$winningCertainty = null;
 		foreach ($acceptableAcceptors as $acceptableAcceptor) {
 			$isSuperType = TrinaryLogic::createYes();
+			$acceptableAcceptor = self::resolveTemplateTypes($types, $acceptableAcceptor);
 			foreach ($acceptableAcceptor->getParameters() as $i => $parameter) {
 				if (!isset($types[$i])) {
 					if (!$unpack || count($types) <= 0) {
@@ -161,7 +192,7 @@ class ParametersAcceptorSelector
 		}
 
 		if (count($winningAcceptors) === 0) {
-			return self::combineAcceptors($acceptableAcceptors);
+			return self::resolveTemplateTypes($types, self::combineAcceptors($acceptableAcceptors));
 		}
 
 		return self::combineAcceptors($winningAcceptors);
@@ -241,7 +272,39 @@ class ParametersAcceptorSelector
 			}
 		}
 
-		return new FunctionVariant($parameters, $isVariadic, $returnType);
+		return new FunctionVariant(TemplateTypeMap::empty(), $parameters, $isVariadic, $returnType);
+	}
+
+	/**
+	 * @param \PHPStan\Type\Type[] $argTypes
+	 */
+	private static function resolveTemplateTypes(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptor
+	{
+		$typeMap = TemplateTypeMap::empty();
+
+		foreach ($parametersAcceptor->getParameters() as $n => $param) {
+			if (!isset($argTypes[$n])) {
+				break;
+			}
+
+			$paramType = $param->getType();
+			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argTypes[$n]));
+		}
+
+		return new FunctionVariant(
+			$typeMap,
+			array_map(static function (ParameterReflection $param) use ($typeMap): ParameterReflection {
+				return new DummyParameter(
+					$param->getName(),
+					GenericHelper::resolveTemplateTypes($param->getType(), $typeMap),
+					$param->isOptional(),
+					$param->passedByReference(),
+					$param->isVariadic()
+				);
+			}, $parametersAcceptor->getParameters()),
+			$parametersAcceptor->isVariadic(),
+			GenericHelper::resolveTemplateTypes($parametersAcceptor->getReturnType(), $typeMap)
+		);
 	}
 
 }

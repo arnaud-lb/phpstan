@@ -34,7 +34,8 @@ class ExistingClassesInClosureTypehintsRule implements \PHPStan\Rules\Rule
 		return $this->check->checkFunction(
 			$node,
 			'Parameter $%s of anonymous function has invalid typehint type %s.',
-			'Return typehint of anonymous function has invalid type %s.'
+			'Return typehint of anonymous function has invalid type %s.',
+			'Type parameter %s of anonyumous function has invalid bound %s (only single class name bounds are supported currently).'
 		);
 	}
 

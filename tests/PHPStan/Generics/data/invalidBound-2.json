@@ -1,0 +1,7 @@
+[
+    {
+        "message": "PHPDoc tag @param for parameter $a contains unresolvable type.",
+        "line": 9,
+        "ignorable": true
+    }
+]

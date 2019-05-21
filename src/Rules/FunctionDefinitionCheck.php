@@ -13,6 +13,9 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -62,12 +65,14 @@ class FunctionDefinitionCheck
 	 * @param \PhpParser\Node\FunctionLike $function
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
+	 * @param string $typeParameterMessage
 	 * @return RuleError[]
 	 */
 	public function checkFunction(
 		FunctionLike $function,
 		string $parameterMessage,
-		string $returnMessage
+		string $returnMessage,
+		string $typeParameterMessage
 	): array
 	{
 		if ($function instanceof ClassMethod) {
@@ -84,6 +89,19 @@ class FunctionDefinitionCheck
 			}
 
 			$functionReflection = $this->broker->getCustomFunction($functionNameName, null);
+
+			foreach ($functionReflection->getTypeParameters() as $typeParameter) {
+				$type = TemplateTypeFactory::fromReflection($typeParameter);
+				if (!($type instanceof ErrorType)) {
+					continue;
+				}
+
+				return [RuleErrorBuilder::message(sprintf(
+					$typeParameterMessage,
+					$typeParameter->getName(),
+					($typeParameter->getBound() ?? new MixedType())->describe(VerbosityLevel::typeOnly())
+				))->line($function->getLine())->build()];
+			}
 
 			/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
 			$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
@@ -159,13 +177,15 @@ class FunctionDefinitionCheck
 	 * @param ClassMethod $methodNode
 	 * @param string $parameterMessage
 	 * @param string $returnMessage
+	 * @param string $typeParameterMessage
 	 * @return RuleError[]
 	 */
 	public function checkClassMethod(
 		PhpMethodFromParserNodeReflection $methodReflection,
 		ClassMethod $methodNode,
 		string $parameterMessage,
-		string $returnMessage
+		string $returnMessage,
+		string $typeParameterMessage
 	): array
 	{
 		/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs $parametersAcceptor */
@@ -205,7 +225,6 @@ class FunctionDefinitionCheck
 					$parameter->getPhpDocType()->getReferencedClasses()
 				);
 			}
-			$parameterNode = null;
 			$parameterNodeCallback = function () use ($parameter, $parameterNodes, &$parameterNode): Param {
 				if ($parameterNode === null) {
 					$parameterNode = $this->getParameterNode($parameter->getName(), $parameterNodes);
@@ -218,6 +237,7 @@ class FunctionDefinitionCheck
 					continue;
 				}
 
+				$parameterNode = null;
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$parameterMessage,
 					$parameter->getName(),
