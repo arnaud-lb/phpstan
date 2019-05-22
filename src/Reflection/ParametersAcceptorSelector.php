@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
@@ -113,17 +114,18 @@ class ParametersAcceptorSelector
 		}
 
 		if (count($acceptableAcceptors) === 0) {
-			return self::combineAcceptors($parametersAcceptors);
+			return self::resolveTemplateTypes($types, self::combineAcceptors($parametersAcceptors));
 		}
 
 		if (count($acceptableAcceptors) === 1) {
-			return $acceptableAcceptors[0];
+			return self::resolveTemplateTypes($types, $acceptableAcceptors[0]);
 		}
 
 		$winningAcceptors = [];
 		$winningCertainty = null;
 		foreach ($acceptableAcceptors as $acceptableAcceptor) {
 			$isSuperType = TrinaryLogic::createYes();
+			$acceptableAcceptor = self::resolveTemplateTypes($types, $acceptableAcceptor);
 			foreach ($acceptableAcceptor->getParameters() as $i => $parameter) {
 				if (!isset($types[$i])) {
 					if (!$unpack || count($types) <= 0) {
@@ -161,7 +163,7 @@ class ParametersAcceptorSelector
 		}
 
 		if (count($winningAcceptors) === 0) {
-			return self::combineAcceptors($acceptableAcceptors);
+			return self::resolveTemplateTypes($types, self::combineAcceptors($acceptableAcceptors));
 		}
 
 		return self::combineAcceptors($winningAcceptors);
@@ -242,6 +244,37 @@ class ParametersAcceptorSelector
 		}
 
 		return new FunctionVariant($parameters, $isVariadic, $returnType);
+	}
+
+	/**
+	 * @param \PHPStan\Type\Type[] $argTypes
+	 */
+	private static function resolveTemplateTypes(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptor
+	{
+		$typeMap = TemplateTypeMap::empty();
+
+		foreach ($parametersAcceptor->getParameters() as $n => $param) {
+			if (!isset($argTypes[$n])) {
+				break;
+			}
+
+			$paramType = $param->getType();
+			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argTypes[$n]));
+		}
+
+		return new FunctionVariant(
+			array_map(static function (ParameterReflection $param) use ($typeMap): ParameterReflection {
+				return new DummyParameter(
+					$param->getName(),
+					$param->getType()->resolveTemplateTypes($typeMap),
+					$param->isOptional(),
+					$param->passedByReference(),
+					$param->isVariadic()
+				);
+			}, $parametersAcceptor->getParameters()),
+			$parametersAcceptor->isVariadic(),
+			$parametersAcceptor->getReturnType()->resolveTemplateTypes($typeMap)
+		);
 	}
 
 }
