@@ -8,14 +8,26 @@ use PHPStan\Type\Type;
 class AcceptEqualsStrategy implements AcceptStrategy
 {
 
-	public function accepts(Type $self, Type $other, bool $strictTypes): TrinaryLogic
+	public function accepts(TemplateType $left, Type $right, bool $strictTypes): TrinaryLogic
 	{
-		return $self->accepts($other);
+		if (!$right instanceof TemplateType) {
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::createFromBoolean(
+			$left->getScope()->equals($right->getScope())
+			&& $left->getName() === $right->getName()
+		);
 	}
 
-	public function isSuperTypeOf(Type $self, Type $other): TrinaryLogic
+	public function isSuperTypeOf(TemplateType $left, Type $right): TrinaryLogic
 	{
-		return
+		return $this->accepts($left, $right, true);
+	}
+
+	public function isSubTypeOf(TemplateType $left, Type $right): TrinaryLogic
+	{
+		return $this->accepts($left, $right, true);
 	}
 
 }

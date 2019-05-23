@@ -5,8 +5,10 @@ namespace PHPStan\Type;
 interface AcceptStrategy
 {
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic;
+	public function accepts(TemplateType $left, Type $right, bool $strictTypes): TrinaryLogic;
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic;
+	public function isSuperTypeOf(TemplateType $left, Type $right): TrinaryLogic;
+
+	public function isSubTypeOf(TemplateType $left, Type $right): TrinaryLogic;
 
 }
