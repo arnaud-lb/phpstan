@@ -38,10 +38,11 @@ class PhpDocNodeResolver
 	public function resolve(PhpDocNode $phpDocNode, NameScope $nameScope): ResolvedPhpDocBlock
 	{
 		$templateTags = $this->resolveTemplateTags($phpDocNode, $nameScope);
+		$templateTypeScope = $nameScope->getTemplateTypeScope();
 
 		$nameScope = $nameScope->withTemplateTypeMap(
-			new TemplateTypeMap(array_map(static function (TemplateTag $tag): TemplateType {
-				return TemplateTypeFactory::fromTemplateTag($tag);
+			new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): TemplateType {
+				return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
 			}, $templateTags))
 		);
 

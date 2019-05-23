@@ -13,11 +13,14 @@ use PHPStan\Type\VerbosityLevel;
 
 final class TemplateObjectType extends ObjectType implements TemplateType
 {
+	/** @var TemplateTypeScope */
+	private $scope;
 
 	/** @var string */
 	private $name;
 
 	public function __construct(
+		TemplateTypeScope $scope,
 		string $name,
 		string $class,
 		?Type $subtractedType = null
@@ -25,7 +28,13 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 	{
 		parent::__construct($class, $subtractedType);
 
+		$this->scope = $scope;
 		$this->name = $name;
+	}
+
+	public function getName(): string
+	{
+		return $this->name;
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -35,6 +44,13 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 			$this->name,
 			parent::describe($level)
 		);
+	}
+
+	public function equals(Type $type): bool
+	{
+		return $type instanceof self
+			&& $type->scope->equals($this->scope)
+			&& $type->name === $this->name;
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
@@ -50,17 +66,6 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return new TemplateTypeMap([
 			$this->name => $receivedType,
 		]);
-	}
-
-	public function resolveTemplateTypes(TemplateTypeMap $types): Type
-	{
-		$type = $types->getType($this->name);
-
-		if ($type === null) {
-			return new ErrorType();
-		}
-
-		return $type;
 	}
 
 }

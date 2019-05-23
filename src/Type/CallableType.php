@@ -219,21 +219,21 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return $types->union($this->getReturnType()->inferTemplateTypes($returnType));
 	}
 
-	public function resolveTemplateTypes(TemplateTypeMap $types): Type
+	public function map(callable $cb): Type
 	{
-		return new self(
-			array_map(static function (NativeParameterReflection $param) use ($types): NativeParameterReflection {
+		return $cb(new static(
+			array_map(static function (NativeParameterReflection $param) use ($cb): NativeParameterReflection {
 				return new NativeParameterReflection(
 					$param->getName(),
 					$param->isOptional(),
-					$param->getType()->resolveTemplateTypes($types),
+					$param->getType()->map($cb),
 					$param->passedByReference(),
 					$param->isVariadic()
 				);
 			}, $this->getParameters()),
-			$this->getReturnType()->resolveTemplateTypes($types),
+			$this->getReturnType()->map($cb),
 			$this->isVariadic()
-		);
+		));
 	}
 
 	/**

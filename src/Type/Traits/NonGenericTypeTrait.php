@@ -13,9 +13,4 @@ trait NonGenericTypeTrait
 		return TemplateTypeMap::empty();
 	}
 
-	public function resolveTemplateTypes(TemplateTypeMap $types): Type
-	{
-		return $this;
-	}
-
 }

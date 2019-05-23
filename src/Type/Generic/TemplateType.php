@@ -7,4 +7,6 @@ use PHPStan\Type\Type;
 interface TemplateType extends Type
 {
 
+	public function getName(): Type;
+
 }

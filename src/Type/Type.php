@@ -90,12 +90,9 @@ interface Type
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap;
 
 	/**
-	 * Replaces template types
-	 *
-	 * Replaces the TemplateTypes found in $this by the real types given
-	 * by $types.
+	 * @param callable(Type):Type $cb
 	 */
-	public function resolveTemplateTypes(TemplateTypeMap $types): Type;
+	public function map(callable $cb): Type;
 
 	/**
 	 * @param mixed[] $properties

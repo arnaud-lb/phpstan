@@ -377,11 +377,24 @@ class IntersectionType implements CompoundType, StaticResolvableType
 		return $types;
 	}
 
-	public function resolveTemplateTypes(TemplateTypeMap $types): Type
+	public function map(callable $cb): Type
 	{
-		return self::intersectTypes(static function (Type $type) use ($types): Type {
-			return $type->resolveTemplateTypes($types);
-		});
+		$types = [];
+		$changed = false;
+
+		foreach ($this->types as $type) {
+			$newType = $type->map($cb);
+			if ($types !== $newType) {
+				$changed = true;
+			}
+			$types[] = $newType;
+		}
+
+		if ($changed) {
+			return $cb(new static($types));
+		}
+
+		return $cb($this);
 	}
 
 	/**

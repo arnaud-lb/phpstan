@@ -313,12 +313,16 @@ class ArrayType implements StaticResolvableType
 		return $resolvedKey->union($resolvedItem);
 	}
 
-	public function resolveTemplateTypes(TemplateTypeMap $types): Type
+	public function map(callable $cb): Type
 	{
-		return new self(
-			$this->getKeyType()->resolveTemplateTypes($types),
-			$this->getItemType()->resolveTemplateTypes($types)
-		);
+		$keyType = $this->keyType->map($cb);
+		$itemType = $this->itemType->map($cb);
+
+		if ($keyType !== $this->keyType && $itemType !== $this->itemType) {
+			return $cb(new static($keyType, $itemType));
+		}
+
+		return $cb($this);
 	}
 
 	/**

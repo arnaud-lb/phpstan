@@ -6,6 +6,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\GenericHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 
@@ -25,6 +26,16 @@ class ParametersAcceptorSelector
 		}
 
 		return $parametersAcceptors[0];
+	}
+
+	/**
+	 *
+	 *
+	 * TODO: Come up with a better name
+	 */
+	public static function selectInternal(
+	): ParametersAcceptor
+	{
 	}
 
 	/**
@@ -266,7 +277,7 @@ class ParametersAcceptorSelector
 			array_map(static function (ParameterReflection $param) use ($typeMap): ParameterReflection {
 				return new DummyParameter(
 					$param->getName(),
-					$param->getType()->resolveTemplateTypes($typeMap),
+					GenericHelper::resolveTemplateTypes($param->getType(), $typeMap),
 					$param->isOptional(),
 					$param->passedByReference(),
 					$param->isVariadic()

@@ -233,6 +233,17 @@ class StaticType implements StaticResolvableType, TypeWithClassName
 		return $this->staticObjectType->toArray();
 	}
 
+	public function map(callable $cb): Type
+	{
+		$staticObjectType = $this->staticObjectType->map($cb);
+
+		if ($staticObjectType !== null) {
+			return $cb(new static($staticObjectType));
+		}
+
+		return $cb($this);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type

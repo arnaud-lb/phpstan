@@ -46,4 +46,8 @@ trait JustNullableTypeTrait
 		return $type instanceof self;
 	}
 
+	public function map(callable $cb): Type
+	{
+		return $cb($this);
+	}
 }

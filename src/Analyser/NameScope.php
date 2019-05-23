@@ -17,6 +17,9 @@ class NameScope
 	/** @var string|null */
 	private $className;
 
+	/** @var string|null */
+	private $functionName;
+
 	/** @var TemplateTypeMap */
 	private $templateTypeMap;
 
@@ -25,11 +28,12 @@ class NameScope
 	 * @param string[] $uses alias(string) => fullName(string)
 	 * @param string|null $className
 	 */
-	public function __construct(?string $namespace, array $uses, ?string $className = null, ?TemplateTypeMap $templateTypeMap = null)
+	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null)
 	{
 		$this->namespace = $namespace;
 		$this->uses = $uses;
 		$this->className = $className;
+		$this->functionName = $functionName;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::empty();
 	}
 
@@ -61,6 +65,14 @@ class NameScope
 		return $name;
 	}
 
+	public function getTemplateTypeScope(): TemplateTypeScope
+	{
+		return new TemplateTypeScope(
+			$this->className,
+			$this->functionName
+		);
+	}
+
 	public function resolveTemplateTypeName(string $name): ?Type
 	{
 		return $this->templateTypeMap->getType($name);
@@ -72,6 +84,7 @@ class NameScope
 			$this->namespace,
 			$this->uses,
 			$this->className,
+			$this->functionName,
 			$map
 		);
 	}

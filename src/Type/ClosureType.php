@@ -274,6 +274,23 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return $this->returnType;
 	}
 
+	public function map(callabke $cb): Type
+	{
+		return $cb(new static(
+			array_map(static function (NativeParameterReflection $param) use ($cb): NativeParameterReflection {
+				return new NativeParameterReflection(
+					$param->getName(),
+					$param->isOptional(),
+					$param->getType()->map($cb),
+					$param->passedByReference(),
+					$param->isVariadic()
+				);
+			}, $this->getParameters()),
+			$this->getReturnType()->map($cb),
+			$this->isVariadic()
+		));
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 * @return Type
