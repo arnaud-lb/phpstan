@@ -6,8 +6,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\GenericHelper;
+use PHPStan\Type\Generic\GenericHelper;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
 class ParametersAcceptorSelector
@@ -29,13 +30,20 @@ class ParametersAcceptorSelector
 	}
 
 	/**
-	 *
-	 *
 	 * TODO: Come up with a better name
+	 *
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @return ParametersAcceptor
 	 */
-	public static function selectInternal(
-	): ParametersAcceptor
+	public static function selectInternalReturnType(
+		array $parametersAcceptors
+	): Type
 	{
+		if (count($parametersAcceptors) !== 1) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		return GenericHelper::getInternalReturnType($parametersAcceptors[0]);
 	}
 
 	/**
@@ -50,10 +58,6 @@ class ParametersAcceptorSelector
 		array $parametersAcceptors
 	): ParametersAcceptor
 	{
-		if (count($parametersAcceptors) === 1) {
-			return $parametersAcceptors[0];
-		}
-
 		$types = [];
 		$unpack = false;
 		foreach ($args as $arg) {
@@ -82,7 +86,7 @@ class ParametersAcceptorSelector
 	): ParametersAcceptor
 	{
 		if (count($parametersAcceptors) === 1) {
-			return $parametersAcceptors[0];
+			return self::resolveTemplateTypes($types, $parametersAcceptors[0]);
 		}
 
 		if (count($parametersAcceptors) === 0) {
@@ -284,7 +288,7 @@ class ParametersAcceptorSelector
 				);
 			}, $parametersAcceptor->getParameters()),
 			$parametersAcceptor->isVariadic(),
-			$parametersAcceptor->getReturnType()->resolveTemplateTypes($typeMap)
+			GenericHelper::resolveTemplateTypes($parametersAcceptor->getReturnType(), $typeMap)
 		);
 	}
 

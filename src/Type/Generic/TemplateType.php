@@ -7,6 +7,10 @@ use PHPStan\Type\Type;
 interface TemplateType extends Type
 {
 
-	public function getName(): Type;
+	public function getName(): string;
+
+	public function getScope(): TemplateTypeScope;
+
+	public function withAcceptStrategy(AcceptStrategy $strategy): TemplateType;
 
 }

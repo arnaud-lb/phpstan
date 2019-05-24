@@ -4,6 +4,7 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -25,9 +26,9 @@ final class TemplateTypeFactory
 		return new ErrorType();
 	}
 
-	public static function fromTemplateTag(TemplateTag $tag): TemplateType
+	public static function fromTemplateTag(TemplateTypeScope $scope, TemplateTag $tag): TemplateType
 	{
-		return self::create($tag->getName(), $tag->getBound());
+		return self::create($scope, $tag->getName(), $tag->getBound());
 	}
 
 }

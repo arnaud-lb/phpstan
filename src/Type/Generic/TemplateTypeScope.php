@@ -17,10 +17,22 @@ class TemplateTypeScope
 		$this->functionName = $functionName;
 	}
 
-	public function equals(self $other): ?string
+	public function equals(self $other): bool
 	{
 		return $this->className === $other->className
 			&& $this->functionName === $other->functionName;
+	}
+
+	/**
+	 * @param mixed[] $properties
+	 * @return Type
+	 */
+	public static function __set_state(array $properties): self
+	{
+		return new self(
+			$properties['className'],
+			$properties['functionName']
+		);
 	}
 
 }

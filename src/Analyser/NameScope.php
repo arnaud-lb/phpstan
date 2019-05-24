@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Reflection\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 
 class NameScope
