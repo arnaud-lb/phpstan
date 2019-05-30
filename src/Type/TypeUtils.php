@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\TemplateType;
 
 class TypeUtils
 {
@@ -109,6 +110,16 @@ class TypeUtils
 	public static function getConstantScalars(Type $type): array
 	{
 		return self::map(ConstantScalarType::class, $type, false);
+	}
+
+	/**
+	 * Returns whether $type is a MixedType
+	 *
+	 * FIXME: Remove this once TemplateTypes do not inherit their bound anymore
+	 */
+	public static function isMixedType(Type $type): bool
+	{
+		return $type instanceof MixedType && !$type instanceof TemplateType;
 	}
 
 	/**

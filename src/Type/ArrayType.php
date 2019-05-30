@@ -7,6 +7,7 @@ use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
@@ -98,8 +99,8 @@ class ArrayType implements StaticResolvableType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		if ($this->keyType instanceof MixedType || $this->keyType instanceof NeverType) {
-			if ($this->itemType instanceof MixedType || $this->itemType instanceof NeverType) {
+		if (TypeUtils::isMixedType($this->keyType) || $this->keyType instanceof NeverType) {
+			if (TypeUtils::isMixedType($this->itemType) || $this->itemType instanceof NeverType) {
 				return 'array';
 			}
 
@@ -286,6 +287,30 @@ class ArrayType implements StaticResolvableType
 		}
 
 		return new UnionType([new IntegerType(), new StringType()]);
+	}
+
+	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
+	{
+		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
+			return $receivedType->inferTemplateTypesOn($this);
+		}
+
+		if (
+			$receivedType instanceof ArrayType
+			&& $this->getKeyType()->accepts($receivedType->getKeyType(), true)->yes()
+			&& $this->getItemType()->accepts($receivedType->getItemType(), true)->yes()
+		) {
+			$receivedKey = $receivedType->getKeyType();
+			$receivedItem = $receivedType->getItemType();
+		} else {
+			$receivedKey = new NeverType();
+			$receivedItem = new NeverType();
+		}
+
+		$keyTypeMap = $this->getKeyType()->inferTemplateTypes($receivedKey);
+		$itemTypeMap = $this->getItemType()->inferTemplateTypes($receivedItem);
+
+		return $keyTypeMap->union($itemTypeMap);
 	}
 
 	/**

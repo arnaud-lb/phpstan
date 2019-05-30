@@ -6,7 +6,10 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
@@ -186,6 +189,32 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
+	}
+
+	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
+	{
+		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
+			return $receivedType->inferTemplateTypesOn($this);
+		}
+
+		if ($receivedType->isCallable()->no()) {
+			$parametersAcceptor = new TrivialParametersAcceptor();
+		} else {
+			$parametersAcceptor = ParametersAcceptorSelector::selectSingle($receivedType->getCallableParametersAcceptors(new OutOfClassScope()));
+		}
+
+		$typeMap = TemplateTypeMap::empty();
+		$args = $parametersAcceptor->getParameters();
+		$returnType = $parametersAcceptor->getReturnType();
+
+		$n = 0;
+		foreach ($this->getParameters() as $param) {
+			$arg = isset($args[$n]) ? $args[$n]->getType() : new NeverType();
+			$typeMap = $typeMap->union($param->getType()->inferTemplateTypes($arg));
+			$n++;
+		}
+
+		return $typeMap->union($this->getReturnType()->inferTemplateTypes($returnType));
 	}
 
 	/**
