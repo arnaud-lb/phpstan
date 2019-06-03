@@ -28,6 +28,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\Generic\GenericType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
@@ -43,6 +44,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 
@@ -204,6 +206,11 @@ class TypeNodeResolver
 			}
 		}
 
+		$templateType = $nameScope->resolveTemplateTypeName($typeNode->name);
+		if ($templateType !== null) {
+			return $templateType;
+		}
+
 		return new ObjectType($nameScope->resolveStringName($typeNode->name));
 	}
 
@@ -319,6 +326,10 @@ class TypeNodeResolver
 					new IterableType($genericTypes[0], $genericTypes[1])
 				);
 			}
+		}
+
+		if ($mainType instanceof TypeWithClassName) {
+			return new GenericType($mainType->getClassName(), $genericTypes);
 		}
 
 		return new ErrorType();

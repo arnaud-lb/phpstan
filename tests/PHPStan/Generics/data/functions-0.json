@@ -1,0 +1,12 @@
+[
+    {
+        "message": "Expected type int, got *NEVER*",
+        "line": 107,
+        "ignorable": true
+    },
+    {
+        "message": "Expected type array, got array<string>",
+        "line": 146,
+        "ignorable": true
+    }
+]

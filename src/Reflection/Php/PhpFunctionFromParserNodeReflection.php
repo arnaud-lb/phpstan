@@ -112,6 +112,15 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 	}
 
 	/**
+	 * @return \PHPStan\Reflection\TypeParameterReflection[]
+	 */
+	public function getTypeParameters(): array
+	{
+		// TODO
+		return [];
+	}
+
+	/**
 	 * @return \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[]
 	 */
 	public function getVariants(): array

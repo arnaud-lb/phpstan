@@ -1,0 +1,17 @@
+[
+    {
+        "message": "Unable to resolve the type of parameter T in call to function PHPStan\\Generics\\Functions\\functionE",
+        "line": 107,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #2 $b of function PHPStan\\Generics\\Functions\\functionF expects callable(int): mixed, null given.",
+        "line": 147,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #2 $b of function PHPStan\\Generics\\Functions\\functionF expects callable(int): mixed, '' given.",
+        "line": 148,
+        "ignorable": true
+    }
+]

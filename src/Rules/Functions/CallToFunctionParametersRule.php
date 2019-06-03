@@ -46,12 +46,14 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 
 		$function = $this->broker->getFunction($node->name, $scope);
 
+		$a = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$node->args,
+			$function->getVariants()
+		);
+
 		return $this->check->check(
-			ParametersAcceptorSelector::selectFromArgs(
-				$scope,
-				$node->args,
-				$function->getVariants()
-			),
+			$a,
 			$scope,
 			$node,
 			[
@@ -64,6 +66,7 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 				'Parameter #%d %s of function ' . $function->getName() . ' expects %s, %s given.',
 				'Result of function ' . $function->getName() . ' (void) is used.',
 				'Parameter #%d %s of function ' . $function->getName() . ' is passed by reference, so it expects variables only.',
+				'Unable to resolve the type of parameter %s in call to function ' . $function->getName(),
 			]
 		);
 	}

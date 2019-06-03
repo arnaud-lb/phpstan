@@ -7,17 +7,22 @@ use PHPStan\Analyser\Scope;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\Tag\ParamTag;
+use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\BrokerAwareExtension;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\Php\PhpTypeParameterReflection;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
+use PHPStan\Reflection\TypeParameterReflection;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\OperatorTypeSpecifyingExtension;
@@ -397,6 +402,7 @@ class Broker
 						$returnType = TypeUtils::toBenevolentUnion($returnType);
 					}
 					$variants[] = new FunctionVariant(
+						TemplateTypeMap::empty(),
 						array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName): NativeParameterReflection {
 							$type = $parameterSignature->getType();
 							if (
@@ -479,6 +485,7 @@ class Broker
 		}
 
 		$reflectionFunction = new \ReflectionFunction($functionName);
+		$phpDocTemplateTags = [];
 		$phpDocParameterTags = [];
 		$phpDocReturnTag = null;
 		$phpDocThrowsTag = null;
@@ -490,6 +497,7 @@ class Broker
 			$fileName = $reflectionFunction->getFileName();
 			$docComment = $reflectionFunction->getDocComment();
 			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, $docComment);
+			$phpDocTemplateTags = $resolvedPhpDoc->getTemplateTags();
 			$phpDocParameterTags = $resolvedPhpDoc->getParamTags();
 			$phpDocReturnTag = $resolvedPhpDoc->getReturnTag();
 			$phpDocThrowsTag = $resolvedPhpDoc->getThrowsTag();
@@ -501,6 +509,13 @@ class Broker
 
 		$functionReflection = $this->functionReflectionFactory->create(
 			$reflectionFunction,
+			array_map(static function (TemplateTag $paramTypeTag) use ($functionName): TypeParameterReflection {
+				return new PhpTypeParameterReflection(
+					$paramTypeTag->getName(),
+					$paramTypeTag->getBound(),
+					new TemplateTypeScope(null, $functionName)
+				);
+			}, $phpDocTemplateTags),
 			array_map(static function (ParamTag $paramTag): Type {
 				return $paramTag->getType();
 			}, $phpDocParameterTags),

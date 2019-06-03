@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\PhpDoc\Tag\TemplateTag;
+use PHPStan\Reflection\TypeParameterReflection;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -23,6 +25,20 @@ final class TemplateTypeFactory
 		}
 
 		return new ErrorType();
+	}
+
+	public static function fromTemplateTag(TemplateTypeScope $scope, TemplateTag $tag): Type
+	{
+		return self::create($scope, $tag->getName(), $tag->getBound());
+	}
+
+	public static function fromReflection(TypeParameterReflection $reflection): Type
+	{
+		return self::create(
+			$reflection->getTemplateTypeScope(),
+			$reflection->getName(),
+			$reflection->getBound()
+		);
 	}
 
 }

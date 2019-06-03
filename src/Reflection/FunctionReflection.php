@@ -8,6 +8,11 @@ interface FunctionReflection extends DeprecatableReflection, InternableReflectio
 	public function getName(): string;
 
 	/**
+	 * @return \PHPStan\Reflection\TypeParameterReflection[]
+	 */
+	public function getTypeParameters(): array;
+
+	/**
 	 * @return \PHPStan\Reflection\ParametersAcceptor[]
 	 */
 	public function getVariants(): array;

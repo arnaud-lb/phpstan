@@ -16,12 +16,8 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCa
 	{
 		$this->analyse([__DIR__ . '/data/incompatible-property-phpdoc.php'], [
 			[
-				'PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$foo contains unresolvable type.',
-				9,
-			],
-			[
 				'PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$bar contains unresolvable type.',
-				12,
+				9,
 			],
 		]);
 	}

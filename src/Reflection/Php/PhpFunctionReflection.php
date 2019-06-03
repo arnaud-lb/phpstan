@@ -11,6 +11,7 @@ use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionWithFilename;
+use PHPStan\Reflection\TypeParameterReflection;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -31,6 +32,9 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 
 	/** @var \PHPStan\Cache\Cache */
 	private $cache;
+
+	/** @var \PHPStan\Reflection\TypeParameterReflection[] */
+	private $typeParameters;
 
 	/** @var \PHPStan\Type\Type[] */
 	private $phpDocParameterTypes;
@@ -64,6 +68,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 	 * @param Parser $parser
 	 * @param FunctionCallStatementFinder $functionCallStatementFinder
 	 * @param Cache $cache
+	 * @param \PHPStan\Reflection\TypeParameterReflection[] $typeParameters
 	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
 	 * @param Type|null $phpDocReturnType
 	 * @param Type|null $phpDocThrowType
@@ -78,6 +83,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		Parser $parser,
 		FunctionCallStatementFinder $functionCallStatementFinder,
 		Cache $cache,
+		array $typeParameters,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		?Type $phpDocThrowType,
@@ -92,6 +98,7 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 		$this->parser = $parser;
 		$this->functionCallStatementFinder = $functionCallStatementFinder;
 		$this->cache = $cache;
+		$this->typeParameters = $typeParameters;
 		$this->phpDocParameterTypes = $phpDocParameterTypes;
 		$this->phpDocReturnType = $phpDocReturnType;
 		$this->phpDocThrowType = $phpDocThrowType;
@@ -113,6 +120,14 @@ class PhpFunctionReflection implements FunctionReflection, ReflectionWithFilenam
 	public function getFileName()
 	{
 		return $this->filename;
+	}
+
+	/**
+	 * @return TypeParameterReflection[]
+	 */
+	public function getTypeParameters(): array
+	{
+		return $this->typeParameters;
 	}
 
 	/**

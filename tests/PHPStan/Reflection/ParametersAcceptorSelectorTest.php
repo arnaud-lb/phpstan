@@ -11,6 +11,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -109,6 +110,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			$ibaseWaitEventVariants,
 			false,
 			new FunctionVariant(
+				TemplateTypeMap::empty(),
 				[
 					new NativeParameterReflection(
 						'link_identifier|event',
@@ -160,6 +162,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			$strtokVariants,
 			false,
 			new FunctionVariant(
+				TemplateTypeMap::empty(),
 				[
 					new NativeParameterReflection(
 						'str|token',
@@ -193,6 +196,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 
 		$variadicVariants = [
 			new FunctionVariant(
+				TemplateTypeMap::empty(),
 				[
 					new NativeParameterReflection(
 						'int',
@@ -215,6 +219,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 				new IntegerType()
 			),
 			new FunctionVariant(
+				TemplateTypeMap::empty(),
 				[
 					new NativeParameterReflection(
 						'int',

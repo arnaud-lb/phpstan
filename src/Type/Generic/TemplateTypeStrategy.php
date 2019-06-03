@@ -10,6 +10,7 @@ interface TemplateTypeStrategy
 
 	public function accepts(TemplateType $left, Type $right, bool $strictTypes): TrinaryLogic;
 
+
 	public function isArgument(): bool;
 
 }

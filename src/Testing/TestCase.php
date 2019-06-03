@@ -31,6 +31,7 @@ use PHPStan\Reflection\Php\PhpMethodReflectionFactory;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PhpDefect\PhpDefectClassReflectionExtension;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
+use PHPStan\Reflection\TypeParameterReflection;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 
@@ -179,6 +180,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
 			/**
 			 * @param \ReflectionFunction $function
+			 * @param TypeParameterReflection[] $typeParameters
 			 * @param Type[] $phpDocParameterTypes
 			 * @param Type|null $phpDocReturnType
 			 * @param Type|null $phpDocThrowType
@@ -191,6 +193,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 			 */
 			public function create(
 				\ReflectionFunction $function,
+				array $typeParameters,
 				array $phpDocParameterTypes,
 				?Type $phpDocReturnType,
 				?Type $phpDocThrowType,
@@ -206,6 +209,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 					$this->parser,
 					$this->functionCallStatementFinder,
 					$this->cache,
+					$typeParameters,
 					$phpDocParameterTypes,
 					$phpDocReturnType,
 					$phpDocThrowType,

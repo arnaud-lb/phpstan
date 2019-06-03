@@ -176,6 +176,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return new ArrayType(new MixedType(), new MixedType());
 	}
 
+	public function getTemplateTypeMap(): TemplateTypeMap
+	{
+		return TemplateTypeMap::empty();
+	}
+
 	/**
 	 * @return array<int, \PHPStan\Reflection\Native\NativeParameterReflection>
 	 */

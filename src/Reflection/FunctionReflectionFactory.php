@@ -10,6 +10,7 @@ interface FunctionReflectionFactory
 
 	/**
 	 * @param \ReflectionFunction $reflection
+	 * @param \PHPStan\Reflection\TypeParameterReflection[] $typeParameters
 	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
 	 * @param Type|null $phpDocReturnType
 	 * @param Type|null $phpDocThrowType
@@ -22,6 +23,7 @@ interface FunctionReflectionFactory
 	 */
 	public function create(
 		\ReflectionFunction $reflection,
+		array $typeParameters,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		?Type $phpDocThrowType,

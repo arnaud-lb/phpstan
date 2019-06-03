@@ -4,7 +4,10 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 
@@ -24,6 +27,37 @@ class ParametersAcceptorSelector
 		}
 
 		return $parametersAcceptors[0];
+	}
+
+	/**
+	 * Returns argument types (types as seen in the function body)
+	 *
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 */
+	public static function selectArguments(
+		array $parametersAcceptors
+	): ParametersAcceptor
+	{
+		if (count($parametersAcceptors) !== 1) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
+		$parametersAcceptor = $parametersAcceptors[0];
+
+		return new FunctionVariant(
+			TemplateTypeMap::empty(),
+			array_map(static function (ParameterReflection $param): ParameterReflection {
+				return new DummyParameter(
+					$param->getName(),
+					TemplateTypeHelper::toArgument($param->getType()),
+					$param->isOptional(),
+					$param->passedByReference(),
+					$param->isVariadic()
+				);
+			}, $parametersAcceptor->getParameters()),
+			$parametersAcceptor->isVariadic(),
+			TemplateTypeHelper::toArgument($parametersAcceptor->getReturnType())
+		);
 	}
 
 	/**
@@ -247,7 +281,7 @@ class ParametersAcceptorSelector
 			}
 		}
 
-		return new FunctionVariant($parameters, $isVariadic, $returnType);
+		return new FunctionVariant(TemplateTypeMap::empty(), $parameters, $isVariadic, $returnType);
 	}
 
 }
