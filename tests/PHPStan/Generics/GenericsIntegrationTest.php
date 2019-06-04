@@ -14,6 +14,7 @@ class GenericsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
 			['failToInfer'],
 			['pick'],
 			['varyingAcceptor'],
+			['classString'],
 		];
 	}
 

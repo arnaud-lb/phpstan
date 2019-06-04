@@ -48,6 +48,11 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return $this->scope;
 	}
 
+	public function getBound(): Type
+	{
+		return new ObjectType($this->class);
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf(

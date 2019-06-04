@@ -49,6 +49,11 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		return $this->scope;
 	}
 
+	public function getBound(): Type
+	{
+		return new MixedType();
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return $this->name;

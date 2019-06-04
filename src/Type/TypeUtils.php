@@ -232,4 +232,22 @@ class TypeUtils
 		return [];
 	}
 
+	public static function getClassNameTypes(Type $type): array
+	{
+		if ($type instanceof HasPropertyType) {
+			return [$type];
+		}
+
+		if ($type instanceof UnionType || $type instanceof IntersectionType) {
+			$classNameTypes = [[]];
+			foreach ($type->getTypes() as $innerType) {
+				$classNameTypes[] = self::getClassNameTypes($innerType);
+			}
+
+			return array_merge(...$hasPropertyTypes);
+		}
+
+		return [];
+	}
+
 }

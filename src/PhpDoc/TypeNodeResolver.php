@@ -309,6 +309,10 @@ class TypeNodeResolver
 			if (count($genericTypes) === 2) { // iterable<KeyType, ValueType>
 				return new IterableType($genericTypes[0], $genericTypes[1]);
 			}
+		} elseif ($matchingTypes === 'class-string') {
+			if (count($genericTypes) === 1) { // class-string<T>
+				$type = ClassStringType::create($genericTypes[0]) ?? new ErrorType();
+			}
 		}
 
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);
