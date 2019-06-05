@@ -36,6 +36,7 @@ use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\ClassStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -54,6 +55,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -67,6 +69,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
@@ -1047,32 +1050,7 @@ class Scope implements ClassMemberAccessAnswerer
 			);
 		} elseif ($node instanceof New_) {
 			if ($node->class instanceof Name) {
-				$className = $node->class->toString();
-				$lowercasedClassName = strtolower($className);
-				$resolvedClassName = $this->resolveName($node->class);
-				if ($this->broker->hasClass($resolvedClassName)) {
-					$classReflection = $this->broker->getClass($resolvedClassName);
-					if ($classReflection->hasConstructor()) {
-						$constructorMethod = $classReflection->getConstructor();
-						$resolvedTypes = [];
-						$methodCall = new Expr\StaticCall(
-							$node->class,
-							new Node\Identifier($constructorMethod->getName()),
-							$node->args
-						);
-						foreach ($this->broker->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
-							if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
-								continue;
-							}
-
-							$resolvedTypes[] = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall($constructorMethod, $methodCall, $this);
-						}
-
-						if (count($resolvedTypes) > 0) {
-							return TypeCombinator::union(...$resolvedTypes);
-						}
-					}
-				}
+				$lowercasedClassName = strtolower($node->class->toString());
 				if (in_array($lowercasedClassName, [
 					'static',
 					'parent',
@@ -1091,13 +1069,34 @@ class Scope implements ClassMemberAccessAnswerer
 					return new NonexistentParentClassType();
 				}
 
-				return new ObjectType($resolvedClassName);
+				$resolvedClassName = $this->resolveName($node->class);
+
+				return $this->getExactInstantiation($resolvedClassName);
 			}
 			if ($node->class instanceof Node\Stmt\Class_) {
 				$anonymousClassReflection = $this->broker->getAnonymousClassReflection($node->class, $this);
 
 				return new ObjectType($anonymousClassReflection->getName());
 			}
+			$type = TypeTraverser::map($this->getType($node->class), function (Type $type, callable $traverse): Type {
+				if ($type instanceof UnionType || $type instanceof IntersectionType) {
+					return $traverse($type);
+				}
+				if ($type instanceof ConstantStringType) {
+					return $this->getExactInstantiation($type->getValue());
+				}
+				if ($type instanceof ClassStringType) {
+					return $type->getType();
+				}
+				if ($type instanceof StringType) {
+					return new MixedType();
+				}
+				return new NeverType();
+			});
+			if ($type instanceof NeverType) {
+				return new MixedType();
+			}
+			return $type;
 		} elseif ($node instanceof Array_) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			foreach ($node->items as $arrayItem) {
@@ -1443,20 +1442,19 @@ class Scope implements ClassMemberAccessAnswerer
 				$calleeType = $this->getType($node->class);
 			}
 
-			$referencedClasses = TypeUtils::getDirectClassNames($calleeType);
-			$resolvedTypes = [];
-			foreach ($referencedClasses as $referencedClass) {
+			$resolve = function (string $referencedClass) use ($node): Type {
 				if (!$this->broker->hasClass($referencedClass)) {
-					continue;
+					return new NeverType();
 				}
 
 				$staticMethodClassReflection = $this->broker->getClass($referencedClass);
 				if (!$staticMethodClassReflection->hasMethod($node->name->name)) {
-					continue;
+					return new NeverType();
 				}
 
 				$staticMethodReflection = $staticMethodClassReflection->getMethod($node->name->name, $this);
 				$foundDynamicReturnTypeExtension = false;
+				$resolvedTypes = [];
 				foreach ($this->broker->getDynamicStaticMethodReturnTypeExtensionsForClass($staticMethodClassReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
 					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($staticMethodReflection)) {
 						continue;
@@ -1467,7 +1465,7 @@ class Scope implements ClassMemberAccessAnswerer
 				}
 
 				if ($foundDynamicReturnTypeExtension) {
-					continue;
+					return TypeCombinator::union(...$resolvedTypes);
 				}
 
 				$staticMethodReturnType = ParametersAcceptorSelector::selectFromArgs(
@@ -1475,31 +1473,55 @@ class Scope implements ClassMemberAccessAnswerer
 					$node->args,
 					$staticMethodReflection->getVariants()
 				)->getReturnType();
-				if ($staticMethodReturnType instanceof StaticResolvableType) {
-					if ($node->class instanceof Name) {
-						$nameNodeClassName = (string) $node->class;
-						$lowercasedNameNodeClassName = strtolower($nameNodeClassName);
-						if (in_array($lowercasedNameNodeClassName, [
-							'self',
-							'static',
-							'parent',
-						], true) && $this->isInClass()) {
-							$resolvedTypes[] = $staticMethodReturnType->changeBaseClass($this->getClassReflection()->getName());
-						} elseif ($this->broker->hasClass($nameNodeClassName)) {
-							$classReflection = $this->broker->getClass($nameNodeClassName);
-							$resolvedTypes[] = $staticMethodReturnType->resolveStatic($classReflection->getName());
-						} else {
-							$resolvedTypes[] = $staticMethodReturnType;
-						}
-					} else {
-						$resolvedTypes[] = $staticMethodReturnType->resolveStatic($referencedClass);
-					}
-				} else {
-					$resolvedTypes[] = $staticMethodReturnType;
+
+				if (!$staticMethodReturnType instanceof StaticResolvableType) {
+					return $staticMethodReturnType;
 				}
-			}
-			if (count($resolvedTypes) > 0) {
-				return TypeCombinator::union(...$resolvedTypes);
+
+				if (!$node->class instanceof Name) {
+					return $staticMethodReturnType->resolveStatic($referencedClass);
+				}
+
+				$nameNodeClassName = (string) $node->class;
+				$lowercasedNameNodeClassName = strtolower($nameNodeClassName);
+				if (in_array($lowercasedNameNodeClassName, [
+					'self',
+					'static',
+					'parent',
+				], true) && $this->isInClass()) {
+					return $staticMethodReturnType->changeBaseClass($this->getClassReflection()->getName());
+				}
+
+				if ($this->broker->hasClass($nameNodeClassName)) {
+					$classReflection = $this->broker->getClass($nameNodeClassName);
+					return $staticMethodReturnType->resolveStatic($classReflection->getName());
+				}
+
+				return $staticMethodReturnType;
+			};
+
+			$resolvedType = TypeTraverser::map($calleeType, function (Type $type, callable $traverse) use ($resolve): Type {
+				if ($type instanceof UnionType) {
+					return $traverse($type);
+				}
+				if ($type instanceof IntersectionType) {
+					return $traverse(TypeCombinator::union(...$type->getTypes()));
+				}
+				if ($type instanceof ConstantStringType) {
+					return $resolve($type->getValue());
+				}
+				if ($type instanceof ClassStringType) {
+					$className = $type->getClassName();
+					if ($className !== null) {
+						return $resolve($className);
+					}
+					return new MixedType();
+				}
+				return new NeverType();
+			});
+
+			if (!$resolvedType instanceof NeverType) {
+				return $resolvedType;
 			}
 
 			if ($calleeType->hasMethod($node->name->name)->yes()) {
@@ -3095,6 +3117,64 @@ class Scope implements ClassMemberAccessAnswerer
 		}
 
 		return $descriptions;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	private function getExactClassNames(Expr $expr): array
+	{
+		if ($expr instanceof Name) {
+			return $expr->toString();
+		}
+
+		$type = $this->getType($expr);
+
+		return array_unique(array_map(function (ConstantStringType $type): string {
+			return $type->getValue();
+		}, TypeUtils::getConstantStringTypes($expr)));
+	}
+
+	/**
+	 * @return string[]
+	 */
+	private function getFuzzyClassNames(Expr $expr): string
+	{
+		$type = $this->getType($expr);
+
+		return array_unique(array_map(function (ClassStringType $type): string {
+			return $type->getValue();
+		}, TypeUtils::getClassStringTypes($expr)));
+	}
+
+	private function getExactInstantiation(string $className): Type
+	{
+		if (!$this->broker->hasClass($className)) {
+			return new ObjectType($className);
+			$classReflection = $this->broker->getClass($className);
+			if ($classReflection->hasConstructor()) {
+				$constructorMethod = $classReflection->getConstructor();
+				$resolvedTypes = [];
+				$methodCall = new Expr\StaticCall(
+					$node->class,
+					new Node\Identifier($constructorMethod->getName()),
+					$node->args
+				);
+				foreach ($this->broker->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
+					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
+						continue;
+					}
+
+					$resolvedTypes[] = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall($constructorMethod, $methodCall, $this);
+				}
+
+				if (count($resolvedTypes) > 0) {
+					return TypeCombinator::union(...$resolvedTypes);
+				}
+			}
+		}
+
+		return new ObjectType($className);
 	}
 
 }

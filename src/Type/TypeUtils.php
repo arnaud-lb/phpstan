@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Accessory\ClassStringType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;

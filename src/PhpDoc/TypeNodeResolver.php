@@ -18,6 +18,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Type\Accessory\ClassStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
@@ -309,9 +310,12 @@ class TypeNodeResolver
 			if (count($genericTypes) === 2) { // iterable<KeyType, ValueType>
 				return new IterableType($genericTypes[0], $genericTypes[1]);
 			}
-		} elseif ($matchingTypes === 'class-string') {
+		} elseif ($mainTypeName === 'class-string') {
 			if (count($genericTypes) === 1) { // class-string<T>
-				$type = ClassStringType::create($genericTypes[0]) ?? new ErrorType();
+				return TypeCombinator::intersect(
+					ClassStringType::create($genericTypes[0]) ?? new ErrorType(),
+					new StringType()
+				);
 			}
 		}
 

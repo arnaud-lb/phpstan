@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Generics;
+namespace PHPStan\Testing;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
@@ -13,7 +13,7 @@ use PHPStan\Type\VerbosityLevel;
 class AssertTypeRule implements Rule
 {
 
-	private const ASSERT_TYPE_FUNCTION = 'PHPStan\\Generics\\assertType';
+	private const ASSERT_TYPE_FUNCTION = 'PHPStan\\Testing\\assertType';
 
 	public function getNodeType(): string
 	{

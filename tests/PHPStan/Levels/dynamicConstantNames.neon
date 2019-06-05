@@ -1,6 +1,11 @@
 includes:
 	- ../../../conf/bleedingEdge.neon
 
+rules:
+	- PHPStan\Testing\AssertTypeRule
+
 parameters:
 	dynamicConstantNames:
 		- Levels\Comparison\Foo::FOO_CONST
+	autoload_files:
+		- src/Testing/functions.php

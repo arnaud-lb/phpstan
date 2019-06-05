@@ -2,8 +2,8 @@ includes:
 	- ../../../conf/bleedingEdge.neon
 
 rules:
-	- PHPStan\Generics\AssertTypeRule
+	- PHPStan\Testing\AssertTypeRule
 
 parameters:
 	autoload_files:
-		- tests/PHPStan/Generics/functions.php
+		- src/Testing/functions.php

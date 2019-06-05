@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Accessory\ClassStringType;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -1154,6 +1155,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				UnionType::class,
 				'T of DateTime|U of DateTime',
 			],
+			[
+				[
+					new ClassStringType(new ObjectType('DateTime')),
+					new StringType(),
+				],
+				UnionType::class,
+				'string|class-string<DateTime>',
+			],
 		];
 	}
 
@@ -1808,6 +1817,74 @@ class TypeCombinatorTest extends \PHPStan\Testing\TestCase
 				IntersectionType::class,
 				'T of DateTime&U of DateTime',
 			],
+			[
+				[
+					new ClassStringType(new ObjectType('DateTime')),
+					new StringType(),
+				],
+				IntersectionType::class,
+				'string&class-string<DateTime>',
+			],
+			[
+				[
+					new ClassStringType(new ObjectType('DateTime')),
+					new ConstantStringType('DateTime'),
+				],
+				IntersectionType::class,
+				'\'DateTime\'&class-string<DateTime>',
+			],
+			[
+				[
+					new ClassStringType(new ObjectType('DateTime')),
+					new ConstantStringType('stdClass'),
+				],
+				NeverType::class,
+				'*NEVER*',
+			],
+			[
+				[
+					new StringType(),
+					new ClassStringType(new ObjectType('DateTime')),
+					new ClassStringType(new ObjectType('DateTimeInterface')),
+				],
+				IntersectionType::class,
+				'string&class-string<DateTime>',
+			],
+			[
+				[
+					new StringType(),
+					new ClassStringType(new ObjectType('DateTime')),
+					new ClassStringType(new ObjectType('Iterator')),
+				],
+				IntersectionType::class,
+				'string&class-string<DateTime>&class-string<Iterator>',
+			],
+			[
+				[
+					new StringType(),
+					new ClassStringType(new ObjectType('DateTime')),
+					new ClassStringType(TemplateTypeFactory::create(
+						new TemplateTypeScope(null, null),
+						'T',
+						null
+					)),
+				],
+				IntersectionType::class,
+				'string&class-string<DateTime>&class-string<T>',
+			],
+			[
+				[
+					new StringType(),
+					new ClassStringType(new ObjectType('DateTime')),
+					new ClassStringType(TemplateTypeFactory::create(
+						new TemplateTypeScope(null, null),
+						'T',
+						new ObjectType('stdClass')
+					)),
+				],
+				NeverType::class,
+				'*NEVER*',
+			]
 		];
 	}
 
