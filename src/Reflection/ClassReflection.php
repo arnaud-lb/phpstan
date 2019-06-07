@@ -8,7 +8,6 @@ use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
-use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -72,6 +71,9 @@ class ClassReflection implements ReflectionWithFilename
 
 	/** @var ?TemplateTypeMap */
 	private $resolvedTemplateTypeMap;
+
+	/** @var array<string,ClassReflection>|null */
+	private $ancestors;
 
 	/**
 	 * @param Broker $broker
@@ -351,7 +353,7 @@ class ClassReflection implements ReflectionWithFilename
 		return $this->getPhpExtension()->hasProperty($this, $propertyName);
 	}
 
-	public function getNativeProperty(string $propertyName): PhpPropertyReflection
+	public function getNativeProperty(string $propertyName): PropertyReflection
 	{
 		if (!$this->hasNativeProperty($propertyName)) {
 			$filename = $this->getFileName();
@@ -655,15 +657,19 @@ class ClassReflection implements ReflectionWithFilename
 	}
 
 	/** @return Type[] */
-	public function typeMapToList(TemplateTypeMap $map): array
+	public function typeListFromMap(TemplateTypeMap $typeMap): array
 	{
-		$types = [];
-
-		foreach ($this->getTemplateTags() as $tag) {
-			$types[] = $map->getType($tag->getName()) ?? new ErrorType();
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
 		}
 
-		return $types;
+		$list = [];
+		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
+			$list[] = $typeMap->getType($tag->getName()) ?? new ErrorType();
+		}
+
+		return $list;
 	}
 
 	/**
@@ -738,6 +744,51 @@ class ClassReflection implements ReflectionWithFilename
 		}
 
 		return $resolvedPhpDoc->getTemplateTags();
+	}
+
+	/**
+	 * @return array<string,ClassReflection>
+	 */
+	private function getAncestors(): array
+	{
+		$ancestors = $this->ancestors;
+
+		if ($ancestors === null) {
+			$ancestors = [
+				$this->getName() => $this,
+			];
+
+			foreach ($this->getInterfaces() as $interface) {
+				$ancestors[$interface->getName()] = $interface;
+				foreach ($interface->getAncestors() as $name => $ancestor) {
+					$ancestors[$name] = $ancestor;
+				}
+			}
+
+			foreach ($this->getTraits() as $trait) {
+				$ancestors[$trait->getName()] = $trait;
+				foreach ($trait->getAncestors() as $name => $ancestor) {
+					$ancestors[$name] = $ancestor;
+				}
+			}
+
+			$parent = $this->getParentClass();
+			if ($parent !== false) {
+				$ancestors[$parent->getName()] = $parent;
+				foreach ($parent->getAncestors() as $name => $ancestor) {
+					$ancestors[$name] = $ancestor;
+				}
+			}
+
+			$this->ancestors = $ancestors;
+		}
+
+		return $ancestors;
+	}
+
+	public function getAncestorWithClassName(string $className): ?self
+	{
+		return $this->getAncestors()[$className] ?? null;
 	}
 
 	/**

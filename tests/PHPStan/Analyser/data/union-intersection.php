@@ -2,6 +2,18 @@
 
 namespace UnionIntersection;
 
+class Foo
+{
+}
+
+class AnotherFoo
+{
+}
+
+class SubFoo extends Foo
+{
+}
+
 class WithFoo
 {
 
@@ -62,9 +74,9 @@ interface WithFooAndBarInterface
 	const FOO_CONSTANT = 1;
 	const BAR_CONSTANT = 1;
 
-	public function doFoo(): AnotherFoo;
+	public function doFoo(): SubFoo;
 
-	public static function doStaticFoo(): AnotherFoo;
+	public static function doStaticFoo(): SubFoo;
 
 	public function doBar(): Bar;
 

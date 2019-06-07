@@ -63,6 +63,11 @@ class PhpPropertyReflection implements PropertyReflection
 		return $this->declaringClass;
 	}
 
+	public function getDeclaringTrait(): ?ClassReflection
+	{
+		return null;
+	}
+
 	/**
 	 * @return string|false
 	 */

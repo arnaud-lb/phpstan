@@ -2505,7 +2505,7 @@ class NodeScopeResolver
 			$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
 				$this->broker,
 				$docComment,
-				$scope->getClassReflection()->getName(),
+				$scope->getClassReflection(),
 				$trait,
 				$functionLike->name->name,
 				$file
@@ -2514,7 +2514,7 @@ class NodeScopeResolver
 			if ($phpDocBlock !== null) {
 				$docComment = $phpDocBlock->getDocComment();
 				$file = $phpDocBlock->getFile();
-				$class = $phpDocBlock->getClass();
+				$class = $phpDocBlock->getClassReflection()->getName();
 				$trait = $phpDocBlock->getTrait();
 				$isExplicitPhpDoc = $phpDocBlock->isExplicit();
 			}

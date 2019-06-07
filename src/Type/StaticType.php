@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
@@ -129,6 +130,11 @@ class StaticType implements TypeWithClassName
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
 		return $this->staticObjectType->getMethod($methodName, $scope);
+	}
+
+	public function getClassReflection(): ?ClassReflection
+	{
+		return $this->staticObjectType->getClassReflection();
 	}
 
 	public function canAccessConstants(): TrinaryLogic

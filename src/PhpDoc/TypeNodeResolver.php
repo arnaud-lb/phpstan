@@ -290,7 +290,7 @@ class TypeNodeResolver
 		return new ArrayType(new MixedType(), $itemType);
 	}
 
-	private function resolveGenericTypeNode(GenericTypeNode $typeNode, NameScope $nameScope): Type
+	public function resolveGenericTypeNode(GenericTypeNode $typeNode, NameScope $nameScope): Type
 	{
 		$mainTypeName = strtolower($typeNode->type->name);
 		$genericTypes = $this->resolveMultiple($typeNode->genericTypes, $nameScope);
@@ -317,6 +317,14 @@ class TypeNodeResolver
 		}
 
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);
+		$broker = Broker::getInstance();
+
+		if ($mainType instanceof TypeWithClassName && $broker->hasClass($mainType->getClassName())) {
+			$classReflection = $broker->getClass($mainType->getClassName());
+			if ($classReflection->isGeneric()) {
+				return new GenericObjectType($mainType->getClassName(), $genericTypes);
+			}
+		}
 
 		if ($mainType instanceof TypeWithClassName && $this->getBroker()->hasClass($mainType->getClassName())) {
 			$classReflection = $this->getBroker()->getClass($mainType->getClassName());

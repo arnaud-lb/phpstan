@@ -91,6 +91,22 @@ class TemplateTypeMap
 		return new self($types);
 	}
 
+	public function mapWith(self $other): self
+	{
+		$map = [];
+		foreach ($this->types as $name => $type) {
+			$map[$name] = $other->types[$name] ?? $type;
+		}
+
+		return new self($map);
+	}
+
+	/** @return Type[] */
+	public function toList(): array
+	{
+		return array_values($this->types);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

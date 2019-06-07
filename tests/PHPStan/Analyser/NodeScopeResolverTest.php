@@ -148,7 +148,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$foo->doBar()',
 			],
 			[
-				'UnionIntersection\AnotherFoo&UnionIntersection\Foo',
+				'UnionIntersection\SubFoo',
 				'$foobar->doFoo()',
 			],
 			[
@@ -196,7 +196,7 @@ class NodeScopeResolverTest extends \PHPStan\Testing\TestCase
 				'$foo::doStaticBar()',
 			],
 			[
-				'UnionIntersection\AnotherFoo&UnionIntersection\Foo',
+				'UnionIntersection\SubFoo',
 				'$foobar::doStaticFoo()',
 			],
 			[

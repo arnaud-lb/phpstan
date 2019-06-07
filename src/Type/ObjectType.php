@@ -49,7 +49,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		return new GenericObjectType(
 			$reflection->getName(),
-			$reflection->typeMapToList($reflection->getActiveTemplateTypeMap())
+			$reflection->typeListFromMap($reflection->getActiveTemplateTypeMap())
 		);
 	}
 

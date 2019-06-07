@@ -387,18 +387,22 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			),
 		];
 
+		$genericType = TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			'T',
+			null
+		);
+
 		$genericVariants = [
 			new FunctionVariant(
-				TemplateTypeMap::createEmpty(),
+				new TemplateTypeMap([
+					'T' => $genericType,
+				]),
 				null,
 				[
 					new DummyParameter(
 						'a',
-						TemplateTypeFactory::create(
-							TemplateTypeScope::createWithFunction('a'),
-							'T',
-							null
-						),
+						$genericType,
 						false,
 						PassedByReference::createNo(),
 						false,
@@ -417,7 +421,9 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 			$genericVariants,
 			true,
 			new FunctionVariant(
-				TemplateTypeMap::createEmpty(),
+				new TemplateTypeMap([
+					'T' => $genericType,
+				]),
 				null,
 				[
 					new DummyParameter(
