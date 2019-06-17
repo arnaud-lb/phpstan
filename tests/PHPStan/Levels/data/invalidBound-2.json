@@ -1,0 +1,22 @@
+[
+    {
+        "message": "PHPDoc tag @param for parameter $a contains unresolvable type.",
+        "line": 9,
+        "ignorable": true
+    },
+    {
+        "message": "Type parameter T of function a() has invalid bound float|int (only class name bounds are supported currently).",
+        "line": 9,
+        "ignorable": true
+    },
+    {
+        "message": "PHPDoc tag @param for parameter $a contains unresolvable type.",
+        "line": 18,
+        "ignorable": true
+    },
+    {
+        "message": "Type parameter T of method PHPStan\\Generics\\InvalidBound\\C::a() has invalid bound float|int (only class name bounds are supported currently).",
+        "line": 18,
+        "ignorable": true
+    }
+]
