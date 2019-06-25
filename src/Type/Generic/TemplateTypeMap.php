@@ -17,7 +17,7 @@ class TemplateTypeMap
 		$this->types = $types;
 	}
 
-	public static function empty(): self
+	public static function createEmtpy(): self
 	{
 		return new self([]);
 	}
