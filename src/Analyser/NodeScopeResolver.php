@@ -74,6 +74,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -312,7 +313,7 @@ class NodeScopeResolver
 			}
 		} elseif ($stmt instanceof Node\Stmt\Function_) {
 			$hasYield = false;
-			[$phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -324,6 +325,7 @@ class NodeScopeResolver
 
 			$functionScope = $scope->enterFunction(
 				$stmt,
+				$templateTypeMap,
 				$phpDocParameterTypes,
 				$phpDocReturnType,
 				$phpDocThrowType,
@@ -350,7 +352,7 @@ class NodeScopeResolver
 			), $functionScope);
 		} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 			$hasYield = false;
-			[$phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -362,6 +364,7 @@ class NodeScopeResolver
 
 			$methodScope = $scope->enterClassMethod(
 				$stmt,
+				$templateTypeMap,
 				$phpDocParameterTypes,
 				$phpDocReturnType,
 				$phpDocThrowType,
@@ -2344,10 +2347,11 @@ class NodeScopeResolver
 	/**
 	 * @param Scope $scope
 	 * @param Node\FunctionLike $functionLike
-	 * @return array{Type[], ?Type, ?Type, ?string, bool, bool, bool}
+	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool}
 	 */
 	private function getPhpDocs(Scope $scope, Node\FunctionLike $functionLike): array
 	{
+		$templateTypeMap = TemplateTypeMap::createEmpty();
 		$phpDocParameterTypes = [];
 		$phpDocReturnType = null;
 		$phpDocThrowType = null;
@@ -2392,6 +2396,12 @@ class NodeScopeResolver
 				$trait,
 				$docComment
 			);
+
+			$templateTypeScope = $resolvedPhpDoc->getNameScope()->getTemplateTypeScope();
+			if ($templateTypeScope !== null) {
+				$templateTypeMap = TemplateTypeMap::createFromTemplateTags($templateTypeScope, $resolvedPhpDoc->getTemplateTags());
+			}
+
 			$phpDocParameterTypes = array_map(static function (ParamTag $tag): Type {
 				return $tag->getType();
 			}, $resolvedPhpDoc->getParamTags());
@@ -2413,7 +2423,7 @@ class NodeScopeResolver
 			$isFinal = $resolvedPhpDoc->isFinal();
 		}
 
-		return [$phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal];
 	}
 
 }

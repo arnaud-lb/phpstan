@@ -38,6 +38,11 @@ class NameScope
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 	}
 
+	public static function createEmpty(): self
+	{
+		return new self(null, [], null, null, null);
+	}
+
 	public function getClassName(): ?string
 	{
 		return $this->className;
@@ -79,6 +84,11 @@ class NameScope
 		return null;
 	}
 
+	public function getTemplateTypeMap(): ?TemplateTypeMap
+	{
+		return $this->templateTypeMap;
+	}
+
 	public function resolveTemplateTypeName(string $name): ?Type
 	{
 		return $this->templateTypeMap->getType($name);
@@ -92,6 +102,20 @@ class NameScope
 			$this->className,
 			$this->functionName,
 			$map
+		);
+	}
+
+	/**
+	 * @param mixed[] $properties
+	 */
+	public static function __set_state(array $properties): self
+	{
+		return new self(
+			$properties['namespace'],
+			$properties['uses'],
+			$properties['className'],
+			$properties['functionName'],
+			$properties['templateTypeMap']
 		);
 	}
 

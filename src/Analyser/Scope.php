@@ -53,6 +53,7 @@ use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
@@ -1832,6 +1833,7 @@ class Scope implements ClassMemberAccessAnswerer
 
 	/**
 	 * @param Node\Stmt\ClassMethod $classMethod
+	 * @param TemplateTypeMap $templateTypeMap
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type|null $phpDocReturnType
 	 * @param Type|null $throwType
@@ -1843,6 +1845,7 @@ class Scope implements ClassMemberAccessAnswerer
 	 */
 	public function enterClassMethod(
 		Node\Stmt\ClassMethod $classMethod,
+		TemplateTypeMap $templateTypeMap,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		?Type $throwType,
@@ -1860,6 +1863,7 @@ class Scope implements ClassMemberAccessAnswerer
 			new PhpMethodFromParserNodeReflection(
 				$this->getClassReflection(),
 				$classMethod,
+				$templateTypeMap,
 				$this->getRealParameterTypes($classMethod),
 				array_map(static function (Type $type): Type {
 					return TemplateTypeHelper::toArgument($type);
@@ -1920,6 +1924,7 @@ class Scope implements ClassMemberAccessAnswerer
 
 	/**
 	 * @param Node\Stmt\Function_ $function
+	 * @param TemplateTypeMap $templateTypeMap
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type|null $phpDocReturnType
 	 * @param Type|null $throwType
@@ -1931,6 +1936,7 @@ class Scope implements ClassMemberAccessAnswerer
 	 */
 	public function enterFunction(
 		Node\Stmt\Function_ $function,
+		TemplateTypeMap $templateTypeMap,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		?Type $throwType,
@@ -1943,6 +1949,7 @@ class Scope implements ClassMemberAccessAnswerer
 		return $this->enterFunctionLike(
 			new PhpFunctionFromParserNodeReflection(
 				$function,
+				$templateTypeMap,
 				$this->getRealParameterTypes($function),
 				array_map(static function (Type $type): Type {
 					return TemplateTypeHelper::toArgument($type);

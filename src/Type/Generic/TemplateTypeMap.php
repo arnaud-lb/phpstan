@@ -2,6 +2,10 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\PhpDoc\Tag\TemplateTag;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -17,7 +21,17 @@ class TemplateTypeMap
 		$this->types = $types;
 	}
 
-	public static function createEmtpy(): self
+	/**
+	 * @param TemplateTag[] $tags
+	 */
+	public static function createFromTemplateTags(TemplateTypeScope $scope, array $tags): TemplateTypeMap
+	{
+		return new self(array_map(function (TemplateTag $tag) use ($scope): Type {
+			return TemplateTypeFactory::fromTemplateTag($scope, $tag);
+		}, $tags));
+	}
+
+	public static function createEmpty(): self
 	{
 		return new self([]);
 	}
@@ -61,6 +75,16 @@ class TemplateTypeMap
 		}
 
 		return new self($result);
+	}
+
+	/**
+	 * @param mixed[] $properties
+	 */
+	public static function __set_state(array $properties): self
+	{
+		return new self(
+			$properties['types']
+		);
 	}
 
 }

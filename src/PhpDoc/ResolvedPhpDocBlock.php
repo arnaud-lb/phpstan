@@ -2,12 +2,20 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\Tag\DeprecatedTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
 
 class ResolvedPhpDocBlock
 {
+
+	/**
+	 * The NameScope used while resolving this doc block
+	 *
+	 * @var NameScope
+	 */
+	private $nameScope;
 
 	/** @var array<string|int, \PHPStan\PhpDoc\Tag\VarTag> */
 	private $varTags;
@@ -43,6 +51,7 @@ class ResolvedPhpDocBlock
 	private $isFinal;
 
 	/**
+	 * @param NameScope $nameScope
 	 * @param array<string|int, \PHPStan\PhpDoc\Tag\VarTag> $varTags
 	 * @param array<string, \PHPStan\PhpDoc\Tag\MethodTag> $methodTags
 	 * @param array<string, \PHPStan\PhpDoc\Tag\PropertyTag> $propertyTags
@@ -56,6 +65,7 @@ class ResolvedPhpDocBlock
 	 * @param bool $isFinal
 	 */
 	private function __construct(
+		NameScope $nameScope,
 		array $varTags,
 		array $methodTags,
 		array $propertyTags,
@@ -69,6 +79,7 @@ class ResolvedPhpDocBlock
 		bool $isFinal
 	)
 	{
+		$this->nameScope = $nameScope;
 		$this->varTags = $varTags;
 		$this->methodTags = $methodTags;
 		$this->propertyTags = $propertyTags;
@@ -83,6 +94,7 @@ class ResolvedPhpDocBlock
 	}
 
 	/**
+	 * @param NameScope $nameScope
 	 * @param array<string|int, \PHPStan\PhpDoc\Tag\VarTag> $varTags
 	 * @param array<string, \PHPStan\PhpDoc\Tag\MethodTag> $methodTags
 	 * @param array<string, \PHPStan\PhpDoc\Tag\PropertyTag> $propertyTags
@@ -97,6 +109,7 @@ class ResolvedPhpDocBlock
 	 * @return self
 	 */
 	public static function create(
+		NameScope $nameScope,
 		array $varTags,
 		array $methodTags,
 		array $propertyTags,
@@ -111,6 +124,7 @@ class ResolvedPhpDocBlock
 	): self
 	{
 		return new self(
+			$nameScope,
 			$varTags,
 			$methodTags,
 			$propertyTags,
@@ -127,7 +141,12 @@ class ResolvedPhpDocBlock
 
 	public static function createEmpty(): self
 	{
-		return new self([], [], [], [], [], null, null, null, false, false, false);
+		return new self(NameScope::createEmpty(), [], [], [], [], [], null, null, null, false, false, false);
+	}
+
+	public function getNameScope(): NameScope
+	{
+		return $this->nameScope;
 	}
 
 	/**
@@ -207,6 +226,7 @@ class ResolvedPhpDocBlock
 	public static function __set_state(array $properties): self
 	{
 		return new self(
+			$properties['nameScope'],
 			$properties['varTags'],
 			$properties['methodTags'],
 			$properties['propertyTags'],

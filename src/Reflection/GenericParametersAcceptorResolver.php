@@ -39,6 +39,7 @@ class GenericParametersAcceptorResolver
 		}
 
 		return new FunctionVariant(
+			$typeMap,
 			array_map(static function (ParameterReflection $param) use ($typeMap): ParameterReflection {
 				return new DummyParameter(
 					$param->getName(),

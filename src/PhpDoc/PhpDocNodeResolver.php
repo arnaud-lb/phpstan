@@ -53,6 +53,7 @@ class PhpDocNodeResolver
 		}
 
 		return ResolvedPhpDocBlock::create(
+			$nameScope,
 			$this->resolveVarTags($phpDocNode, $nameScope),
 			$this->resolveMethodTags($phpDocNode, $nameScope),
 			$this->resolvePropertyTags($phpDocNode, $nameScope),
