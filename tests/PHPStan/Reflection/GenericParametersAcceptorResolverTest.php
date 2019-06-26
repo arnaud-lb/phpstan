@@ -339,7 +339,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\TestCase
 						),
 						new DummyParameter(
 							'b',
-							new ErrorType(),
+							$templateType('U'),
 							false,
 							PassedByReference::createNo(),
 							false,

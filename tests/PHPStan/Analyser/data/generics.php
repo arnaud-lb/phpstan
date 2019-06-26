@@ -139,8 +139,8 @@ function testF($arrayOfInt, $callableOrNull) {
 		return $a;
 	}));
 	assertType('array<string>', f($arrayOfInt, $callableOrNull));
-	assertType('array', f($arrayOfInt, null));
-	assertType('array', f($arrayOfInt, ''));
+	assertType('array<B (function PHPStan\Generics\FunctionsAssertType\f())>', f($arrayOfInt, null));
+	assertType('array<B (function PHPStan\Generics\FunctionsAssertType\f())>', f($arrayOfInt, ''));
 }
 
 /**

@@ -19,7 +19,7 @@ class TemplateTypeHelper
 				$newType = $standins->getType($type->getName());
 
 				if ($newType === null) {
-					return new ErrorType();
+					return self::toArgument($type);
 				}
 
 				return $traverse($newType);
