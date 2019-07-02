@@ -46,9 +46,12 @@ class PhpDocNodeResolver
 
 		if ($templateTypeScope !== null) {
 			$nameScope = $nameScope->withTemplateTypeMap(
-				new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
-					return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
-				}, $templateTags))
+				new TemplateTypeMap(array_merge(
+					$nameScope->getTemplateTypeMap()->getTypes(),
+					array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
+						return TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag);
+					}, $templateTags)
+				))
 			);
 		}
 
