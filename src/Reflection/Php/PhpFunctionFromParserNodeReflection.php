@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\Php;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassMethod;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -13,7 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 
-class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\FunctionReflection
+class PhpFunctionFromParserNodeReflection implements FunctionReflection
 {
 
 	/** @var \PhpParser\Node\FunctionLike */

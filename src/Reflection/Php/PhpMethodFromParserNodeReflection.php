@@ -5,7 +5,7 @@ namespace PHPStan\Reflection\Php;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -15,7 +15,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
 
-class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements MethodReflection
+class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements ExtendedMethodReflection
 {
 
 	/** @var \PHPStan\Reflection\ClassReflection */
@@ -130,6 +130,11 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		}
 
 		return parent::getReturnType();
+	}
+
+	public function getExtendedMethodReflection(): ?ExtendedMethodReflection
+	{
+		return $this;
 	}
 
 }

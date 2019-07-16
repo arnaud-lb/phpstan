@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection;
 
-class ClassConstantReflection implements ConstantReflection, DeprecatableReflection, InternableReflection
+class ClassConstantReflection implements ExtendedConstantReflection
 {
 
 	/** @var \PHPStan\Reflection\ClassReflection */
@@ -85,6 +85,11 @@ class ClassConstantReflection implements ConstantReflection, DeprecatableReflect
 	public function isInternal(): bool
 	{
 		return $this->isInternal;
+	}
+
+	public function getExtendedConstantReflection(): ?ExtendedConstantReflection
+	{
+		return $this;
 	}
 
 }

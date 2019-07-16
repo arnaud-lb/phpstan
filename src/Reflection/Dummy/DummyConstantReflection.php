@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\Dummy;
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
+use PHPStan\Reflection\ExtendedConstantReflection;
 
 class DummyConstantReflection implements ConstantReflection
 {
@@ -51,6 +52,11 @@ class DummyConstantReflection implements ConstantReflection
 	{
 		// so that Scope::getTypeFromValue() returns mixed
 		return new \stdClass();
+	}
+
+	public function getExtendedConstantReflection(): ?ExtendedConstantReflection
+	{
+		return null;
 	}
 
 }

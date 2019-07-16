@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Type\Type;
 
 class UniversalObjectCrateProperty implements \PHPStan\Reflection\PropertyReflection
@@ -48,6 +49,16 @@ class UniversalObjectCrateProperty implements \PHPStan\Reflection\PropertyReflec
 		return $this->type;
 	}
 
+	public function getWritableType(): Type
+	{
+		return $this->type;
+	}
+
+	public function canChangeTypeAfterAssignment(): bool
+	{
+		return true;
+	}
+
 	public function isReadable(): bool
 	{
 		return true;
@@ -56,6 +67,11 @@ class UniversalObjectCrateProperty implements \PHPStan\Reflection\PropertyReflec
 	public function isWritable(): bool
 	{
 		return true;
+	}
+
+	public function getExtendedPropertyReflection(): ?ExtendedPropertyReflection
+	{
+		return null;
 	}
 
 }

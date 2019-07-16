@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Annotations;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -104,6 +105,11 @@ class AnnotationMethodReflection implements MethodReflection
 			];
 		}
 		return $this->variants;
+	}
+
+	public function getExtendedMethodReflection(): ?ExtendedMethodReflection
+	{
+		return null;
 	}
 
 }

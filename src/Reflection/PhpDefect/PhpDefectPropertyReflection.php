@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\PhpDefect;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Type\Type;
 
@@ -49,6 +50,16 @@ class PhpDefectPropertyReflection implements PropertyReflection
 		return $this->type;
 	}
 
+	public function getWritableType(): Type
+	{
+		return $this->type;
+	}
+
+	public function canChangeTypeAfterAssignment(): bool
+	{
+		return true;
+	}
+
 	public function isReadable(): bool
 	{
 		return true;
@@ -57,6 +68,11 @@ class PhpDefectPropertyReflection implements PropertyReflection
 	public function isWritable(): bool
 	{
 		return true;
+	}
+
+	public function getExtendedPropertyReflection(): ?ExtendedPropertyReflection
+	{
+		return null;
 	}
 
 }

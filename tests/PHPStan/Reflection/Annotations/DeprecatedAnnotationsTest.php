@@ -5,7 +5,6 @@ namespace PHPStan\Reflection\Annotations;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
-use PHPStan\Reflection\DeprecatableReflection;
 
 class DeprecatedAnnotationsTest extends \PHPStan\Testing\TestCase
 {
@@ -97,22 +96,22 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\TestCase
 		$this->assertSame($classDeprecation, $class->getDeprecatedDescription());
 
 		foreach ($deprecatedAnnotations['method'] ?? [] as $methodName => $deprecatedMessage) {
-			$methodAnnotation = $class->getMethod($methodName, $scope);
-			$this->assertInstanceOf(DeprecatableReflection::class, $methodAnnotation);
+			$methodAnnotation = $class->getMethod($methodName, $scope)->getExtendedMethodReflection();
+			$this->assertNotNull($methodAnnotation);
 			$this->assertSame($deprecated, $methodAnnotation->isDeprecated());
 			$this->assertSame($deprecatedMessage, $methodAnnotation->getDeprecatedDescription());
 		}
 
 		foreach ($deprecatedAnnotations['property'] ?? [] as $propertyName => $deprecatedMessage) {
-			$propertyAnnotation = $class->getProperty($propertyName, $scope);
-			$this->assertInstanceOf(DeprecatableReflection::class, $propertyAnnotation);
+			$propertyAnnotation = $class->getProperty($propertyName, $scope)->getExtendedPropertyReflection();
+			$this->assertNotNull($propertyAnnotation);
 			$this->assertSame($deprecated, $propertyAnnotation->isDeprecated());
 			$this->assertSame($deprecatedMessage, $propertyAnnotation->getDeprecatedDescription());
 		}
 
 		foreach ($deprecatedAnnotations['constant'] ?? [] as $constantName => $deprecatedMessage) {
-			$constantAnnotation = $class->getConstant($constantName);
-			$this->assertInstanceOf(DeprecatableReflection::class, $constantAnnotation);
+			$constantAnnotation = $class->getConstant($constantName)->getExtendedConstantReflection();
+			$this->assertNotNull($constantAnnotation);
 			$this->assertSame($deprecated, $constantAnnotation->isDeprecated());
 			$this->assertSame($deprecatedMessage, $constantAnnotation->getDeprecatedDescription());
 		}

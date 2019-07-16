@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Dummy;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -60,6 +61,11 @@ class DummyConstructorReflection implements MethodReflection
 				new VoidType()
 			),
 		];
+	}
+
+	public function getExtendedMethodReflection(): ?ExtendedMethodReflection
+	{
+		return null;
 	}
 
 }

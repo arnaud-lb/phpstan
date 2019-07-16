@@ -3,12 +3,10 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\DeprecatableReflection;
-use PHPStan\Reflection\InternableReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Type\Type;
 
-class PhpPropertyReflection implements PropertyReflection, DeprecatableReflection, InternableReflection
+class PhpPropertyReflection implements ExtendedPropertyReflection
 {
 
 	/** @var \PHPStan\Reflection\ClassReflection */
@@ -79,6 +77,16 @@ class PhpPropertyReflection implements PropertyReflection, DeprecatableReflectio
 		return $this->type;
 	}
 
+	public function getWritableType(): Type
+	{
+		return $this->type;
+	}
+
+	public function canChangeTypeAfterAssignment(): bool
+	{
+		return true;
+	}
+
 	public function isReadable(): bool
 	{
 		return true;
@@ -106,6 +114,11 @@ class PhpPropertyReflection implements PropertyReflection, DeprecatableReflectio
 	public function isInternal(): bool
 	{
 		return $this->isInternal;
+	}
+
+	public function getExtendedPropertyReflection(): ?ExtendedPropertyReflection
+	{
+		return $this;
 	}
 
 }

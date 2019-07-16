@@ -2,8 +2,14 @@
 
 namespace PHPStan\Reflection;
 
-interface ExtendedPropertyReflection extends PropertyReflection
+use PHPStan\Type\Type;
+
+interface ExtendedMethodReflection extends MethodReflection
 {
+
+	public function isFinal(): bool;
+
+	public function getThrowType(): ?Type;
 
 	public function isDeprecated(): bool;
 

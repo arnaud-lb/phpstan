@@ -9,15 +9,11 @@ use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\DeprecatableReflection;
-use PHPStan\Reflection\FinalizableReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
-use PHPStan\Reflection\InternableReflection;
 use PHPStan\Reflection\MethodPrototypeReflection;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
-use PHPStan\Reflection\ThrowableReflection;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -30,7 +26,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
 
-class PhpMethodReflection implements MethodReflection, DeprecatableReflection, InternableReflection, FinalizableReflection, ThrowableReflection
+class PhpMethodReflection implements ExtendedMethodReflection
 {
 
 	/** @var \PHPStan\Reflection\ClassReflection */
@@ -432,6 +428,11 @@ class PhpMethodReflection implements MethodReflection, DeprecatableReflection, I
 	public function getThrowType(): ?Type
 	{
 		return $this->phpDocThrowType;
+	}
+
+	public function getExtendedMethodReflection(): ?ExtendedMethodReflection
+	{
+		return $this;
 	}
 
 }

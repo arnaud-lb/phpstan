@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\Dummy;
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 
@@ -59,6 +60,11 @@ class DummyMethodReflection implements MethodReflection
 		return [
 			new TrivialParametersAcceptor(),
 		];
+	}
+
+	public function getExtendedMethodReflection(): ?ExtendedMethodReflection
+	{
+		return null;
 	}
 
 }

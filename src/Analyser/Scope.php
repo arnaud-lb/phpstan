@@ -28,7 +28,6 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
-use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -1539,11 +1538,7 @@ class Scope implements ClassMemberAccessAnswerer
 
 				$property = $propertyClassReflection->getProperty($propertyName, $this);
 				if ($this->isInExpressionAssign($node)) {
-					if ($property instanceof ExtendedPropertyReflection) {
-						$types[] = $property->getWritableType();
-					} else {
-						$types[] = $property->getType();
-					}
+					$types[] = $property->getWritableType();
 				} else {
 					$types[] = $property->getType();
 				}
@@ -1558,10 +1553,7 @@ class Scope implements ClassMemberAccessAnswerer
 			}
 
 			$property = $propertyFetchedOnType->getProperty($node->name->name, $this);
-			if (
-				$this->isInExpressionAssign($node)
-				&& $property instanceof ExtendedPropertyReflection
-			) {
+			if ($this->isInExpressionAssign($node)) {
 				return $property->getWritableType();
 			}
 			return $property->getType();
@@ -1592,11 +1584,7 @@ class Scope implements ClassMemberAccessAnswerer
 
 				$property = $propertyClassReflection->getProperty($propertyName, $this);
 				if ($this->isInExpressionAssign($node)) {
-					if ($property instanceof ExtendedPropertyReflection) {
-						$types[] = $property->getWritableType();
-					} else {
-						$types[] = $property->getType();
-					}
+					$types[] = $property->getWritableType();
 				} else {
 					$types[] = $propertyClassReflection->getProperty($propertyName, $this)->getType();
 				}
@@ -1611,10 +1599,7 @@ class Scope implements ClassMemberAccessAnswerer
 			}
 
 			$property = $calleeType->getProperty($node->name->name, $this);
-			if (
-				$this->isInExpressionAssign($node)
-				&& $property instanceof ExtendedPropertyReflection
-			) {
+			if ($this->isInExpressionAssign($node)) {
 				return $property->getWritableType();
 			}
 			return $property->getType();

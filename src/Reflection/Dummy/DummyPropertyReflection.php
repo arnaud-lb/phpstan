@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Dummy;
 
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -38,6 +39,16 @@ class DummyPropertyReflection implements PropertyReflection
 		return new MixedType();
 	}
 
+	public function getWritableType(): Type
+	{
+		return $this->getType();
+	}
+
+	public function canChangeTypeAfterAssignment(): bool
+	{
+		return true;
+	}
+
 	public function isReadable(): bool
 	{
 		return true;
@@ -46,6 +57,11 @@ class DummyPropertyReflection implements PropertyReflection
 	public function isWritable(): bool
 	{
 		return true;
+	}
+
+	public function getExtendedPropertyReflection(): ?ExtendedPropertyReflection
+	{
+		return null;
 	}
 
 }

@@ -80,4 +80,24 @@ class SimpleXMLElementProperty implements ExtendedPropertyReflection
 		return false;
 	}
 
+	public function isDeprecated(): bool
+	{
+		return false;
+	}
+
+	public function getDeprecatedDescription(): ?string
+	{
+		return null;
+	}
+
+	public function isInternal(): bool
+	{
+		return false;
+	}
+
+	public function getExtendedPropertyReflection(): ?ExtendedPropertyReflection
+	{
+		return $this;
+	}
+
 }

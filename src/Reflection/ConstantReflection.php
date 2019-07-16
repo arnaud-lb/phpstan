@@ -12,4 +12,6 @@ interface ConstantReflection extends ClassMemberReflection
 	 */
 	public function getValue();
 
+	public function getExtendedConstantReflection(): ?ExtendedConstantReflection;
+
 }

@@ -2,11 +2,13 @@
 
 namespace PHPStan\Reflection;
 
-interface DeprecatableReflection
+interface ExtendedConstantReflection extends ConstantReflection
 {
 
 	public function isDeprecated(): bool;
 
 	public function getDeprecatedDescription(): ?string;
+
+	public function isInternal(): bool;
 
 }

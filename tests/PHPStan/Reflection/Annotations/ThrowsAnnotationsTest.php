@@ -5,7 +5,6 @@ namespace PHPStan\Reflection\Annotations;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\Broker;
-use PHPStan\Reflection\ThrowableReflection;
 use PHPStan\Type\VerbosityLevel;
 
 class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
@@ -57,8 +56,8 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\TestCase
 		$scope = $this->createMock(Scope::class);
 
 		foreach ($throwsAnnotations as $methodName => $type) {
-			$methodAnnotation = $class->getMethod($methodName, $scope);
-			$this->assertInstanceOf(ThrowableReflection::class, $methodAnnotation);
+			$methodAnnotation = $class->getMethod($methodName, $scope)->getExtendedMethodReflection();
+			$this->assertNotNull($methodAnnotation);
 			$throwType = $methodAnnotation->getThrowType();
 			$this->assertSame($type, $throwType !== null ? $throwType->describe(VerbosityLevel::typeOnly()) : null);
 		}

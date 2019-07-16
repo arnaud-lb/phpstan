@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -94,6 +95,11 @@ class IntersectionTypeMethodReflection implements MethodReflection
 				$returnType
 			);
 		}, $variants);
+	}
+
+	public function getExtendedMethodReflection(): ?ExtendedMethodReflection
+	{
+		return null;
 	}
 
 }

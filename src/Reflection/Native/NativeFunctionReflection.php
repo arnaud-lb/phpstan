@@ -2,9 +2,10 @@
 
 namespace PHPStan\Reflection\Native;
 
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Type;
 
-class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
+class NativeFunctionReflection implements FunctionReflection
 {
 
 	/** @var string */

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Annotations;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Type\Type;
 
@@ -59,6 +60,16 @@ class AnnotationPropertyReflection implements PropertyReflection
 		return $this->type;
 	}
 
+	public function getWritableType(): Type
+	{
+		return $this->type;
+	}
+
+	public function canChangeTypeAfterAssignment(): bool
+	{
+		return true;
+	}
+
 	public function isReadable(): bool
 	{
 		return $this->readable;
@@ -67,6 +78,11 @@ class AnnotationPropertyReflection implements PropertyReflection
 	public function isWritable(): bool
 	{
 		return $this->writable;
+	}
+
+	public function getExtendedPropertyReflection(): ?ExtendedPropertyReflection
+	{
+		return null;
 	}
 
 }
