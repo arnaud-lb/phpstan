@@ -397,6 +397,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\TestCase
 						TemplateTypeFactory::create(
 							TemplateTypeScope::createWithFunction('a'),
 							'T',
+							null,
 							null
 						),
 						false,

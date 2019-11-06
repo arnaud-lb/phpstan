@@ -17,7 +17,8 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction($functionName ?? '_'),
 				$name,
-				$bound
+				$bound,
+				null
 			);
 		};
 
@@ -93,7 +94,8 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction($functionName ?? '_'),
 				$name,
-				$bound
+				$bound,
+				null
 			);
 		};
 
@@ -186,7 +188,8 @@ class TemplateTypeTest extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction($functionName ?? '_'),
 				$name,
-				$bound
+				$bound,
+				null
 			);
 		};
 

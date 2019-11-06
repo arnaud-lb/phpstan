@@ -2,9 +2,11 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
@@ -28,9 +30,13 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 	/** @var ObjectType */
 	private $bound;
 
+	/** @var TemplateTypeVariance */
+	private $variance;
+
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,
+		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		string $class,
 		?Type $subtractedType = null
@@ -40,6 +46,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
+		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = new ObjectType($class, $subtractedType);
 	}
@@ -163,10 +170,16 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return new self(
 			$this->scope,
 			new TemplateTypeArgumentStrategy(),
+			$this->variance,
 			$this->name,
 			$this->getClassName(),
 			$this->getSubtractedType()
 		);
+	}
+
+	public function isValidVariance(Type $a, Type $b): bool
+	{
+		return $this->variance->isValidVariance($a, $b);
 	}
 
 	public function subtract(Type $type): Type
@@ -178,6 +191,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return new self(
 			$this->scope,
 			$this->strategy,
+			$this->variance,
 			$this->name,
 			$this->getClassName(),
 			$type
@@ -189,6 +203,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return new self(
 			$this->scope,
 			$this->strategy,
+			$this->variance,
 			$this->name,
 			$this->getClassName(),
 			null
@@ -200,6 +215,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return new self(
 			$this->scope,
 			$this->strategy,
+			$this->variance,
 			$this->name,
 			$this->getClassName(),
 			$subtractedType
@@ -215,6 +231,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		return new self(
 			$properties['scope'],
 			$properties['strategy'],
+			$properties['variance'],
 			$properties['name'],
 			$properties['className'],
 			$properties['subtractedType']

@@ -30,7 +30,8 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
-				$type
+				$type,
+				null
 			);
 		};
 

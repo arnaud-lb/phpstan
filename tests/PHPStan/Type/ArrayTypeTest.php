@@ -144,7 +144,8 @@ class ArrayTypeTest extends \PHPStan\Testing\TestCase
 			return TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
-				new MixedType()
+				new MixedType(),
+				null
 			);
 		};
 

@@ -44,6 +44,7 @@ class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 				TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('a'),
 					'U',
+					null,
 					null
 				),
 				false,
@@ -64,7 +65,7 @@ class TemplateTypeFactoryTest extends \PHPStan\Testing\TestCase
 	public function testCreate(?Type $bound, bool $expectSuccess): void
 	{
 		$scope = TemplateTypeScope::createWithFunction('a');
-		$templateType = TemplateTypeFactory::create($scope, 'T', $bound);
+		$templateType = TemplateTypeFactory::create($scope, 'T', $bound, null);
 
 		if ($expectSuccess) {
 			$this->assertInstanceOf(TemplateType::class, $templateType);

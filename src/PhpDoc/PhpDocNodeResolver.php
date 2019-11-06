@@ -17,11 +17,13 @@ use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ThrowsTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -263,7 +265,18 @@ class PhpDocNodeResolver
 			foreach ($phpDocNode->getTemplateTagValues($tagName) as $tagValue) {
 				$resolved[$tagValue->name] = new TemplateTag(
 					$tagValue->name,
-					$tagValue->bound !== null ? $this->typeNodeResolver->resolve($tagValue->bound, $nameScope) : new MixedType()
+					$tagValue->bound !== null ? $this->typeNodeResolver->resolve($tagValue->bound, $nameScope) : new MixedType(),
+					TemplateTypeVariance::createInvariant()
+				);
+			}
+		}
+
+		foreach (['@template-covariant', '@psalm-template-covariant', '@phpstan-template-covariant'] as $tagName) {
+			foreach ($phpDocNode->getTemplateTagValues($tagName) as $tagValue) {
+				$resolved[$tagValue->name] = new TemplateTag(
+					$tagValue->name,
+					$tagValue->bound !== null ? $this->typeNodeResolver->resolve($tagValue->bound, $nameScope) : new MixedType(),
+					TemplateTypeVariance::createCovariant()
 				);
 			}
 		}

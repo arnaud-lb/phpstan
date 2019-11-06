@@ -12,6 +12,7 @@ use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -116,17 +117,24 @@ final class GenericObjectType extends ObjectType
 			return TrinaryLogic::createNo();
 		}
 
-		foreach ($this->types as $i => $t) {
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
+			return $nakedSuperTypeOf;
+		}
+
+		$typeList = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
+
+		foreach ($typeList as $i => $templateType) {
 			if (!isset($ancestor->types[$i])) {
 				throw new \PHPStan\ShouldNotHappenException();
 			}
-			if (!$t->equals($ancestor->types[$i])) {
-				if ($t instanceof MixedType) {
-					continue;
-				}
-				if ($ancestor->types[$i] instanceof MixedType) {
-					continue;
-				}
+			if (!isset($this->types[$i])) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+			if (!$templateType instanceof TemplateType) {
+				throw new \PHPStan\ShouldNotHappenException();
+			}
+			if (!$templateType->isValidVariance($this->types[$i], $ancestor->types[$i])) {
 				return TrinaryLogic::createNo();
 			}
 		}
